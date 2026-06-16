@@ -1,0 +1,323 @@
+AUDIT 10 — TRADER OUTPUT & DISPLAY COMPLIANCE AUDIT
+
+SECTION 1 — DISPLAY INVENTORY
+There are 7 dashboard tables total: Panel A (Command Center, top_right), Panel B (Belief Distributions, bottom_right), Panel C (Intelligence Engine, middle_left), Panel P3 (Recursive Wave Intel, bottom_center), Panel FU (FU Order Blocks, middle_right), ERF Panel (embedded in Panel C), FRZ Panel (Recursive Future Return, bottom_left). Total distinct fields: 95.
+PANEL A — Command Center
+Field	Variable	Source	Visible	Advanced	Unused	Deprecated
+Header Phase Tag	ie1a_currentPhase + ie1a_phaseConfidence	Engine 1A	YES	NO	NO	NO
+Action	directiveStr	Section 24 Trade State	YES	NO	NO	NO
+Engine Armed/Locked	engineArmed	Section 21 Entry Lock	YES	NO	NO	NO
+L0 Target	l0_targetWave	Unified Classifier	YES	NO	NO	NO
+L0 Phase [IE1A]	ie1a_currentPhase	Engine 1A	YES	NO	NO	NO
+IE1A BOS	ie1a_bos1Active/ie1a_bos2Active	Engine 1A	YES	NO	NO	NO
+IE1A Induction	ie1a_inductionOriginBroken etc.	Engine 1A	YES	NO	NO	NO
+Wave Type	isRecursiveWave, entryCycle	Wave Spawn Engine	YES	NO	NO	NO
+Next Expected	expectedNextPhase, expectedNextProb	Prediction Engine	YES	NO	NO	NO
+Direction	direction	Core	YES	NO	NO	NO
+Structure	structBias	Structure Engine	YES	NO	NO	NO
+Alignment	direction == structBias	Derived	YES	NO	NO	NO
+HTF Bias	htfAlign	MTF Engine	YES	NO	NO	NO
+Energy State [ERF]	eae_energyState, re_resolutionState	ERF	YES	NO	NO	NO
+TF1 Exp	expScr_tf1, dir_tf1	HTF Belief Engine	YES	NO	NO	NO
+TF2 Exp	expScr_tf2, dir_tf2	HTF Belief Engine	YES	NO	NO	NO
+HTF Interp	htf_PrimaryInterp (= ie1a_currentPhase)	Engine 1A (relay)	YES	NO	YES — duplicate of L0 Phase	NO
+Resonance	resonance	HTF Alignment Gate	YES	NO	NO	NO
+Velocity	velocityScore	Physics Observer	YES	NO	NO	NO
+PANEL B — Belief Distributions
+Field	Variable	Source	Visible	Advanced	Unused	Deprecated
+Expansion Belief	d_expansionBelief	Belief Engine	YES	NO	NO	NO
+Convexity Belief	d_convexityBelief	Belief Engine	YES	NO	NO	NO
+New High/Low Belief	d_creationBelief	Belief Engine	YES	NO	NO	NO
+Absorption Belief	d_absorptionBelief	Belief Engine	YES	NO	NO	NO
+Retracement Belief	d_retracementBelief	Belief Engine	YES	NO	NO	NO
+Demand Return Belief	d_demandReturnBelief	Belief Engine	YES	NO	NO	NO
+Exp Proximity	expansionProximity	Proximity Engine	YES	YES — diagnostic, candidate for Advanced	NO	NO
+Conv Proximity	convexityProximity	Proximity Engine	YES	YES	NO	NO
+Create Proximity	creationProximity	Proximity Engine	YES	YES	NO	NO
+Absorb Proximity	absorptionProximity	Proximity Engine	YES	YES	NO	NO
+Retr Proximity	retracementProximity	Proximity Engine	YES	YES	NO	NO
+Exp Pre-Conv Evidence	expansionPreConvSeen	Section 14	YES	YES	NO	NO
+Exp Induction Evidence	expansionInductionConf	Section 14	YES	YES	NO	NO
+Retr Pre-Conv Evidence	retracementPreConvSeen	Section 14	YES	YES	NO	NO
+Retr Induction Evidence	retracementInductionConf	Section 14	YES	YES	NO	NO
+Induc Type	inducConfidence	Section 14	YES	YES	NO	NO
+Physics: Expansion	obs_ExpansionScore	Physics Observation Layer	YES	YES	NO	NO
+Physics: Decay	obs_DecayScore	Physics Observation Layer	YES	YES	NO	NO
+Physics: Curvature	obs_CurvatureScore	Physics Observation Layer	YES	YES	NO	NO
+Physics: Absorption	obs_AbsorptionScore	Physics Observation Layer	YES	YES	NO	NO
+Physics: Liquidity	obs_LiquidityScore	Physics Observation Layer	YES	YES	NO	NO
+Physics: Consensus	physicsConsensus	Physics Observation Layer	YES	NO	NO	NO
+Remaining Room	availableSpace, cycleCapacity	Geometry Engine	YES	YES	NO	NO
+Geo Capacity	geoFullConvexityPossible etc.	Geometry Engine	YES	YES	NO	NO
+PANEL C — Intelligence Engine
+Field	Variable	Source	Visible	Advanced	Unused	Deprecated
+Hyp: Expansion	hyp_LateExpansion_N	Hypothesis Engine	YES	YES — legacy, superseded by IE1A	PARTIAL — not used by decisions	YES — pre-IE1A architecture
+Hyp: Exp Pre-Conv	hyp_EarlyConvexity_N	Hypothesis Engine	YES	YES	PARTIAL	YES
+Hyp: New High/Low	hyp_CreationForming_N	Hypothesis Engine	YES	YES	PARTIAL	YES
+Hyp: Absorption	hyp_AbsorptionActive_N	Hypothesis Engine	YES	YES	PARTIAL	YES
+Hyp: Retracement	hyp_RetracementActive_N	Hypothesis Engine	YES	YES	PARTIAL	YES
+Hyp: Demand Return	hyp_DemandReturn_N	Hypothesis Engine	YES	YES	PARTIAL	YES
+Expected Next	expectedNextPhase	Prediction Engine	YES	NO (duplicate of Panel A)	YES — duplicate field	NO
+Probability	expectedNextProb	Prediction Engine	YES	NO (duplicate)	YES — duplicate field	NO
+Accuracy 10/25/50	predAcc10/25/50	Validation Engine	YES	YES	NO	NO
+Reliability	predReliability	Validation Engine	YES	YES	NO	NO
+Model Confidence	modelConfidence	Adaptive Confidence Engine	YES	NO	NO	NO
+Wave Deviation	waveDeviation, deviationAlert	Wave Deviation Engine	YES	YES	NO	NO
+Physics Consensus	physicsConsensus	Physics Observer	YES	NO (duplicate of Panel B)	YES — duplicate field	NO
+M1 Signal	m1Warning	M1 Early Warning	YES	YES	NO	NO
+Exp Weakening	m1ExpansionWeak	M1 Early Warning	YES	YES	NO	NO
+Conv Emerging	m1ConvexityEmer	M1 Early Warning	YES	YES	NO	NO
+Abs Emerging	m1AbsorptionEmer	M1 Early Warning	YES	YES	NO	NO
+Bayesian prob	finalProb	Bayesian Model	YES	NO	NO	NO
+Trade readiness	tradeReadiness	Section 17	YES	NO	NO	NO
+Signal quality	grade, gradeCol	Scoring Engine	YES	NO	NO	NO
+Edge filter	edgePassesFilter	Trade Decision	YES	NO	NO	NO
+Expansion (Direction Prob)	expansionProbability	Probability Panels	YES	YES	NO	NO
+Reversal (Direction Prob)	reversalProbability	Probability Panels	YES	YES	NO	NO
+Buy score	buyProb	Slippage/Opportunity Engine	YES	NO	NO	NO
+Sell score	sellProb	Slippage/Opportunity Engine	YES	NO	NO	NO
+Live edge	liveDirective	Slippage/Opportunity Engine	YES	NO	YES — overlaps "ACTION" in Panel A	NO
+Net edge	netEdgeAdjusted	Slippage/Opportunity Engine	YES	NO	NO	NO
+Wave Gen	waveGeneration	Counter	YES	YES	NO	NO
+Display Mode	displayMode	DIE	YES	YES	NO	NO
+Density	die_densityLevel, die_density100	DIE	YES	YES	NO	NO
+Active FU Blocks	die_activeFUCount	DIE-2	YES	NO (duplicate of FU panel)	YES — duplicate	NO
+Entry Score	die_entryScore_safe	DIE-3	YES	NO	NO	NO
+Narrative	die_narrativeDir	DIE-6	YES	NO (duplicate of Panel A "L0 Phase")	YES — duplicate	NO
+FU Status	die_fuContrib	DIE-4	YES	NO	NO	NO
+ERF PANEL (embedded in Panel C)
+Field	Variable	Source	Visible	Advanced	Unused	Deprecated
+Energy State	eae_energyState	EAE	YES	NO (duplicate of Panel A)	YES — duplicate	NO
+Cleaning State	ede_cleaningState	EDE	YES	NO	NO	NO
+Dissipation %	ede_dissipationProgress	EDE	YES	NO	NO	NO
+Messy = Dissipation	ede_messyPriceIsDissipation	EDE	YES	YES	NO	NO
+Resolution State	re_resolutionState	RE	YES	NO (duplicate of Panel A)	YES — duplicate	NO
+Residual Energy	re_residualEnergyScore	RE	YES	NO	NO	NO
+Recursive Completion	re_completedCycles/re_expectedCycles	RE	YES	YES	NO	NO
+Revisit Probability	re_revisitProbability	RE	YES	NO	NO	NO
+Primary Attractor	eae_primaryAttractorLabel	EAE	YES	NO	PARTIAL — not actionable, label only	NO
+Attractor Score	eae_primaryAttractorScore	EAE	YES	NO	NO	NO
+Rotation Suppress	erf_suppressRotation	ERF Rotation Mod	YES	YES	NO	NO
+ERF Confidence	erf_confidence	ERF	YES	NO	YES — calculated but never used in decisions	NO
+Dissipation Conf	erf_dissipationConfidence	ERF	YES	YES	YES — calculated but never used in decisions	NO
+PANEL P3 — Recursive Wave Intel
+Field	Variable	Source	Visible	Advanced	Unused	Deprecated
+HTF Structure	narr_grandchild	Narrative Engine	YES	YES	NO	NO
+Child Wave	narr_child	Narrative Engine	YES	YES	NO	NO
+Primary Wave	narr_primary	Narrative Engine	YES	NO (duplicate of Panel A)	YES — duplicate	NO
+M1 Sensor	narr_micro	Narrative Engine	YES	YES	NO	NO
+Outcome	narr_outcome	Narrative Engine	YES	NO	NO	NO
+Fractal Conf (left)	fractalConfidence, fractalConfLabel	Fractal Confidence Engine	YES	NO (duplicated right column)	YES — duplicate within same panel	NO
+Parent (HTF)	l2_targetWave, l2_currentPhase	L2 Classifier	YES	YES	NO	NO
+Child (ITF)	l1_targetWave, l1_currentPhase	L1 Classifier	YES	YES	NO	NO
+Grandchild (TF)	l0_targetWave, l0_currentPhase	L0 (= Engine 1A)	YES	NO (duplicate of Panel A)	YES — duplicate	NO
+P→C Relation	parentChildRelationship	Harmonics	YES	YES	NO	NO
+C→GC Relation	childGrandchildRelationship	Harmonics	YES	YES	NO	NO
+L2/L1/L0/L3 Dominance	l2_dominance etc.	Dominance Engine	YES	YES	NO	NO
+Dominant Level	dominantWaveLevel	Dominance Engine	YES	YES	NO	NO
+Fusion Interp	fusionInterpretation	MTF Fusion	YES	YES	NO	NO
+Fusion Conf	fusionConfidence	MTF Fusion	YES	YES	NO	NO
+HTF Trend	htfTrendIntact	MTF Fusion	YES	YES	NO	NO
+LTF Reversal	ltfReversalForming	MTF Fusion	YES	YES	NO	NO
+L0–L1/L1–L2/L0–L2/Overall Agreement	waveAgreement_*	Agreement Engine	YES	YES	NO	NO
+L2/L1/L0/L3 Confidence	l2_confidence etc.	Fractal Confidence	YES	YES	NO	NO
+Fractal Conf (right)	fractalConfidence	(duplicate, see above)	YES	—	YES	NO
+Cycle 1–4 completion	cycle1_completion etc.	Recursive Cycles	YES	YES	NO	NO
+Active Phase	activeCyclePhase	Cycle Tracker	YES	NO (duplicate of Panel A)	YES — duplicate	NO
+Capacity / Capacity Score	geoCapacityNarrative, geoCapacityScore	Geometric Capacity	YES	NO (duplicate of Panel B)	YES — duplicate	NO
+Exec Directive	execDirective	Execution Probability V2	YES	NO	YES — third competing "action" field alongside ACTION and Live Edge	NO
+Continuation/Reversal/Expansion/Creation/Absorption %	execProb_*	Execution Probability V2	YES	YES	NO	NO
+PANEL FU — FU Order Blocks
+Field	Variable	Source	Visible	Advanced	Unused	Deprecated
+Active Blocks	die_activeFUCount	DIE-2	YES	NO (duplicate of Panel C)	YES — duplicate	NO
+Bull/Bear FU Active	die_anyBullFUActive/die_anyBearFUActive	DIE-2	YES	NO	NO	NO
+Confluence	die_entryFUConfluence	DIE-4	YES	NO	NO	NO
+Last FU Block Direction/State/Age	array reads	DIE-2	YES	YES	NO	NO
+FRZ PANEL — Recursive Future Return
+Field	Variable	Source	Visible	Advanced	Unused	Deprecated
+Active count, bull/bear count	frz_activeCount, frz_bullCount, frz_bearCount	FRZ Engine	YES	NO	NO	NO
+Zone rows (FRZ#, Owner, Score, Priority, Status)	frz_*Arr	FRZ Engine	YES	NO	NO	NO
+Ownership tally (L0–L3)	frz_ownL0..L3	FRZ Ownership Engine	YES	YES	NO	NO
+Liq-Free Val	frz_approved	Section 18 Validation	YES	YES	NO	NO
+Resting	frz_liqResting	Section 18 Validation	YES	YES	NO	NO
+Live Score	frz_rawScore, frz_class	FRZ Engine	YES	NO	NO	NO
+SECTION 2 — V71 ARCHITECTURE DISPLAY COMPLIANCE
+Required Field	Exists?	Displaying?	Populated?	Real Data?	Placeholder?	Source Variable	Source Engine
+MARKET BIAS	YES	YES	YES	YES	NO	direction, structBias, htfAlign	Core / Structure / MTF
+MARKET NARRATIVE	YES	YES	YES	YES	NO	die_narrativeDir (= ie1a_currentPhase)	DIE-6 / Engine 1A
+RECOMMENDED ACTION	YES	YES	YES	YES	NO	directiveStr	Section 24 Trade State
+CONFIDENCE	YES	YES	YES	YES	NO	modelConfidence, finalProb	Adaptive Confidence / Bayesian
+TRADE TYPE	PARTIAL	PARTIAL	PARTIAL	PARTIAL	PARTIAL	tradeDir (Long/Short only)	Trade State Engine
+ENTRY	NO	NO	NO	NO	N/A — field does not exist	none	none
+TARGETS	NO	NO	NO	NO	N/A — field does not exist	none	none
+INVALIDATION	PARTIAL (logic only)	NO	NO	NO	N/A — exists as boolean logic, never surfaced as a price	exitCondition, bullInvalid/bearInvalid	Section 24
+QUALITY	YES	YES	YES	YES	NO	grade, die_entryScore_safe	Scoring Engine / DIE-3
+Critical Gap: ENTRY and TARGETS have zero implementation anywhere in the 5,790-line file — no price level is ever calculated for where to enter or where price is expected to go. INVALIDATION exists only as an internal boolean exit trigger (exitCondition) — it is never rendered as a price level the trader could place a stop at. TRADE TYPE is reduced to directional bias (Long/Short) with no distinction between e.g. breakout vs. retest vs. continuation entry types.
+
+SECTION 3 — ENERGY RESOLUTION FRAMEWORK DISPLAY AUDIT
+ERF Output	Exists	Calc'd	Stored	Displayed	Populated	Trader Visible	Advanced	Broken	Placeholder	Source Var	Source Engine
+Energy State	YES	YES	N/A (recomputed/bar)	YES (x2 panels)	YES	YES	NO	NO	NO	eae_energyState	EAE
+Cleaning State	YES	YES	N/A	YES	YES	YES	NO	NO	NO	ede_cleaningState	EDE
+Delivery State	YES (logic) / NO (label)	YES	N/A	NO	YES (internally)	NO	N/A	NO	NO	ede_liquidationBecomingDirectional	EDE
+Resolution State	YES	YES	N/A	YES (x2 panels)	YES	YES	NO	NO	NO	re_resolutionState	RE
+Residual Energy	YES	YES	N/A	YES	YES	YES	NO	NO	NO	re_residualEnergyScore	RE
+Completion Score	YES	YES	N/A	YES	YES	YES	NO	NO	NO	re_recursiveCompletionScore	RE
+Primary Attractor	YES	YES	N/A	YES	YES	YES	NO	NO	PARTIAL — label only, no price shown on dashboard (price exists in eae_primaryAttractorPrice but is never displayed as text/number)	eae_primaryAttractorLabel, eae_primaryAttractorScore	EAE
+Secondary Attractor	YES	YES	N/A	NO	YES (internally)	NO	N/A	NO	NO — calculated but never surfaced	eae_secondaryAttractorPrice, eae_secondaryAttractorScore	EAE
+Extended Attractor	NO	NO	NO	NO	NO	NO	N/A	N/A	N/A — variable does not exist at all	none	none
+Delivery Space Score	YES	YES	N/A	NO	YES (internally)	NO	N/A	NO	NO	ede_deliverySpaceScore	EDE
+Dissipation Confidence	YES	YES	N/A	YES	YES	YES	YES (could be)	NO	NO	erf_dissipationConfidence	ERF
+Resolution Nodes	PARTIAL	YES (as booleans)	N/A	NO	YES (internally)	NO	N/A	NO	NO	re_nodeOpen, re_nodeClosed	RE
+Reasons not displayed:
+* Delivery State: calculated (ede_liquidationBecomingDirectional) but no dashboard row was ever written for it — an oversight, not an architectural choice.
+* Secondary Attractor: fully calculated (price + score) but no table.cell call exists anywhere referencing eae_secondaryAttractorPrice or eae_secondaryAttractorScore.
+* Extended Attractor: never implemented in code at all — not a display gap, a missing engine output.
+* Delivery Space Score: calculated but unused downstream and never rendered.
+* Resolution Nodes: exist as two booleans (re_nodeOpen/re_nodeClosed) but no dedicated dashboard row surfaces "node open/closed" status directly — trader must infer it from Resolution State text.
+* Primary Attractor Price: the numeric price level (eae_primaryAttractorPrice) is computed but only the descriptive label is shown — the trader never sees the actual price.
+
+SECTION 4 — FUTURE RETURN ZONE (FRZ) AUDIT
+Component	Exists	Calc'd	Stored	Displayed	Populated	Placeholder	Broken	Unused
+FRZ Registry	YES (array-based, no formal struct)	YES	YES (var array<...>)	YES	YES	NO	NO	NO
+FRZ Score	YES	YES	YES	YES	YES	NO	NO	NO
+FRZ Type	PARTIAL — direction (frz_dirArr: bull/bear) shown via Owner color, but no "type" classification like breakout/retest/sweep exists	PARTIAL	YES	PARTIAL	PARTIAL	NO	NO	NO
+FRZ Strength	YES (= frz_class: Weak/Moderate/Strong/Exceptional)	YES	YES	YES	YES	NO	NO	NO
+FRZ Confidence	NO — no separate confidence metric distinct from Score exists	NO	NO	NO	NO	N/A	N/A	N/A
+FRZ Distance	NO — distance from current price to FRZ zone is never calculated or displayed	NO	NO	NO	NO	N/A	N/A	N/A
+FRZ Status	YES (Open/Partial/Mitigated/Invalidated)	YES	YES	YES	YES	NO	NO	NO
+Primary FRZ	PARTIAL — frz_bestScore/frz_bestOwner etc. computed in Section 19 but never explicitly labeled "Primary FRZ" on dashboard; the zone-row table shows all zones newest-first, not best-first	PARTIAL	YES	NO (not as a distinct labeled row)	YES internally	NO	NO	YES — calculated, never surfaced as its own field
+Secondary FRZ	NO — no secondary/runner-up FRZ concept exists	NO	NO	NO	NO	N/A	N/A	N/A
+Source Variables: frz_topArr, frz_botArr, frz_scoreArr, frz_classArr, frz_tierArr, frz_statusArr, frz_ownerArr, frz_dirArr
+Exact Creation Logic:
+
+
+pine
+int frz_rawScore = frz_scoreFU + frz_scoreIMB + frz_scoreLIQ + frz_scoreDisp
+bool frz_approved = not frz_liqResting
+// Spawn occurs when frz_rawScore >= frz_minScore (input) AND approved AND no duplicate zone
+Dashboard Bindings: Section 20 (lines 5633–5790), table frz_dash, position bottom_left. Columns: Zone | Owner | Score | Priority | Status. Up to 8 most recent zones shown, newest-first — not best-score-first, meaning a Tier 1 zone from 3 bars ago can be pushed off-screen by a Tier 4 zone from the current bar.
+TRADER VISIBILITY VERDICT: The trader CAN see FRZ — it is NOT a DISPLAY VIOLATION in the strict sense (a dedicated, populated panel exists). However: there is no Distance-to-zone field, no Confidence field distinct from Score, and the "best zone" is not promoted above mere recency — this is a PARTIAL DISPLAY VIOLATION on prioritization (a Tier 1 zone should be pinned/highlighted, not buried by chronology).
+
+SECTION 5 — ATTRACTOR DISPLAY AUDIT
+Attractor	Exists	Calc'd	Displayed	Populated	Real Value	Placeholder	Broken Binding	Missing Variable	Missing Engine Output	Missing Dashboard Connection
+Primary	YES	YES	PARTIAL — label + score only, price missing	YES	YES (score) / NO (price never shown)	NO	NO	NO	NO	YES — price variable exists but no table.cell call uses it
+Secondary	YES	YES	NO	YES (internally)	YES (internally)	NO	NO	NO	NO	YES — zero dashboard rows reference it
+Extended	NO	NO	NO	NO	N/A	N/A	N/A	YES — never declared	YES — engine never built	YES (consequence)
+Exact Chain:
+* Primary Attractor: EAE (eae_primaryAttractorPrice, eae_primaryAttractorScore, eae_primaryAttractorLabel) → no intermediate storage (computed fresh per bar) → Dashboard partial connection (only eae_primaryAttractorLabel and eae_primaryAttractorScore reach table.cell; eae_primaryAttractorPrice is dead-ended after calculation).
+* Secondary Attractor: EAE (eae_secondaryAttractorPrice, eae_secondaryAttractorScore) → no storage → Dashboard: NO CONNECTION — chain terminates at calculation; never reaches any table.cell call.
+* Extended Attractor: Chain never begins — no engine code, no variable, no storage, no dashboard reference.
+Where failure occurs: Primary attractor fails at the final Engine→Dashboard hop (price field dropped). Secondary attractor fails at the same hop completely (entire field dropped). Extended attractor fails at the Engine step — it was never built.
+
+SECTION 6 — DECISION ENGINE DISPLAY AUDIT
+Field	Exists	Calculated	Displayed	Connected	Real Output	Placeholder
+Market Bias	YES	YES	YES	YES	YES	NO
+Market Narrative	YES	YES	YES	YES	YES	NO
+Recommended Action	YES	YES	YES	YES	YES	NO
+Confidence	YES	YES	YES	YES	YES	NO
+Trade Type	PARTIAL	PARTIAL (direction only)	PARTIAL	PARTIAL	PARTIAL	NO
+Entry	NO	NO	NO	NO	NO	N/A
+Targets	NO	NO	NO	NO	NO	N/A
+Invalidation	PARTIAL (internal boolean only)	YES (as exit logic)	NO	NO (not exposed as price)	NO	N/A
+Quality	YES	YES	YES	YES	YES	NO
+Missing components:
+* Entry: No price level calculation exists anywhere. The only "entry" concept is the binary longSignal/shortSignal trigger bar — there is no suggested entry price, no entry zone, no limit/market distinction.
+* Targets: No target price engine exists. eae_primaryAttractorPrice is the closest conceptual analog (an unresolved-energy price level) but it is never labeled, framed, or displayed as a "target."
+* Invalidation: bullInvalid/bearInvalid/exitCondition exist as internal triggers that flip tradeDir to 0 and fire "EXIT NOW" — but no specific invalidation price (e.g., a stop-loss level) is ever calculated or shown. The trader sees the recommendation to exit only after invalidation logic fires, not in advance as a plannable level.
+
+SECTION 7 — DIAGNOSTIC VS DECISION DISPLAY AUDIT
+Classifying all ~95 fields:
+Field	Classification
+IE1A Phase, BOS, Induction state	Diagnostic
+Wave Type, Next Expected	Diagnostic
+Direction, Structure, Alignment, HTF Bias	Diagnostic (feeds Bias)
+Energy State [ERF]	Diagnostic
+TF1/TF2 Exp, HTF Interp, Resonance	Diagnostic
+Velocity	Diagnostic
+Action	Decision
+Engine Armed/Locked	Diagnostic
+All Belief scores (6)	Diagnostic
+All Proximity scores (5)	Diagnostic
+Convexity Evidence rows (5)	Diagnostic
+Physics Observer rows (6)	Diagnostic
+Remaining Room / Geo Capacity	Diagnostic
+Hypothesis Engine rows (6)	Diagnostic
+Expected Next / Probability	Diagnostic
+Accuracy 10/25/50 / Reliability	Diagnostic
+Model Confidence	Decision-support (Confidence)
+Wave Deviation	Diagnostic
+Physics Consensus	Diagnostic
+M1 Warning rows (4)	Diagnostic
+Bayesian prob (finalProb)	Decision-support (Confidence)
+Trade readiness	Decision-support
+Signal quality (grade)	Decision (Quality)
+Edge filter	Diagnostic
+Expansion/Reversal Probability	Diagnostic
+Buy/Sell score	Decision-support
+Live edge	Decision (overlapping with Action)
+Net edge	Diagnostic
+Wave Gen, Display Mode, Density	Diagnostic
+Active FU Blocks, Entry Score, Narrative, FU Status	Diagnostic
+ERF panel (all 13 rows)	Diagnostic
+P3 panel (all ~28 rows)	Diagnostic
+FU panel (all rows)	Diagnostic
+FRZ panel zone rows	Diagnostic (zones shown, but no action attached)
+FRZ ownership/validation rows	Diagnostic
+Tally:
+* Diagnostic fields: ~84 / 95 ≈ 88%
+* Decision fields: ~11 / 95 ≈ 12% (Action, Engine Armed, Model Confidence, finalProb, Trade readiness, Buy/Sell score, Live edge, Signal quality grade, Exec Directive, plus the redundant Action-equivalents)
+Determination: This is overwhelmingly a Wave Diagnostic System, with a thin Market Intelligence layer, and only nascent Trade Decision System characteristics. The "Action" field and "grade" do constitute real decision output, but Entry/Target/Invalidation — the three fields that would make this a genuine Trade Decision System — are absent. The system tells the trader what phase the market is in (88% of the surface area) far more than it tells them what to do about it with specific numbers.
+
+SECTION 8 — ADVANCED MODE COMPLIANCE AUDIT
+Item	Currently Visible?	Should Be Visible?	Advanced Only?	Violation?
+Wave Registry (informal — point4Origin/cycleHigh/cycleLow vars)	YES (scattered across Panel A/P3)	YES (basic)	Partially	NO — basic version belongs in main view; full internals belong in Advanced
+Delivery Wave Registry	N/A — does not exist	—	—	N/A
+Rotation Data (erf_suppressRotation, erf_activeDissipation)	YES (ERF panel, main dashboard)	YES	YES	YES — VIOLATION. This is an internal suppression mechanic, not actionable trader information; it clutters the primary panel.
+Consensus Data (physicsConsensus, waveAgreement*)	YES (Panel B + P3, main dashboard)	YES	YES	YES — VIOLATION. Multi-layer consensus scoring is diagnostic depth, not primary decision info.
+Integrity Scores (waveModelFit, waveDeviation)	YES (Panel C, main)	YES	YES	YES — VIOLATION
+Control Transfer Data (dominantWaveLevel, dominance %s)	YES (P3, main)	YES	YES	YES — VIOLATION
+Recursive Completion Data (re_completedCycles/re_expectedCycles, cycle1-4 completion)	YES (ERF panel + P3, main)	YES	YES	YES — VIOLATION — duplicated across two panels
+Resolution Node Registry (re_nodeOpen/re_nodeClosed)	NO — not directly shown	YES (in Advanced)	YES	NO — correctly absent from main view, though it should be added to an Advanced panel rather than remaining unexposed entirely
+Summary: 5 of 8 categories are VIOLATIONS — internal/diagnostic-depth data (Rotation, Consensus, Integrity, Control Transfer, Recursive Completion) is rendered in the primary, always-on dashboard panels rather than gated behind an Advanced Mode toggle. There is currently no Advanced Mode concept implemented at all — displayMode (Execution/Context/Research) controls label density on the chart, not dashboard panel depth. The five dashboard panels (A, B, C, P3, FU) plus ERF and FRZ panels are all shown simultaneously regardless of displayMode, governed only by individual per-row boolean toggles (showDA_*, showDB_*, etc.) — there is no single "Basic vs Advanced" master switch.
+
+SECTION 9 — DASHBOARD VALUE AUDIT
+Field Group	How It Helps Trading	Actionable?	Bias	Entry	Targeting	Risk Mgmt	Pure Diagnostic?	Value Tier
+Action / Directive	Tells trader what to do right now	YES	—	Indirect	NO	NO	NO	High
+Direction / Structure / HTF Bias	Establishes directional context	Indirect	YES	NO	NO	NO	Partial	High
+Signal quality (grade) / Entry Score	Filters good vs bad setups	YES	NO	YES	NO	NO	NO	High
+Model Confidence / finalProb	Calibrates conviction	Indirect	NO	Indirect	NO	NO	Partial	Medium
+IE1A Phase / BOS / Induction	Explains why system thinks what it thinks	NO	Indirect	NO	NO	NO	YES	Medium (transparency value)
+Belief Distributions (6 rows)	Shows competing hypothesis weights	NO	NO	NO	NO	NO	YES	Low
+Proximity scores (5 rows)	Shows how close to a phase transition	NO	NO	NO	NO	NO	YES	Low
+Physics Observer (6 rows)	Raw internal signal scores	NO	NO	NO	NO	NO	YES	Low
+Hypothesis Engine (6 rows, Panel C)	Legacy duplicate of Belief engine	NO	NO	NO	NO	NO	YES	No Value (redundant with Panel B)
+Validation Engine (Accuracy 10/25/50)	Shows historical prediction track record	Indirect	NO	NO	NO	NO	Partial	Medium
+M1 Early Warning (4 rows)	Micro-timeframe early signal	Indirect	NO	YES (timing)	NO	NO	Partial	Medium
+ERF panel (13 rows)	Explains energy/dissipation state	NO	NO	NO	Partial (attractor price hidden)	NO	YES	Low–Medium
+FRZ panel	Shows future return zones	Indirect	NO	NO	YES (if distance/price were shown)	NO	Partial	Medium (would be High if Distance field existed)
+P3 panel (28 rows: dominance, agreement, fractal conf, exec probability)	Multi-timeframe meta-analysis	NO	Indirect	NO	NO	NO	YES	Low
+Wave Deviation / Integrity	Flags model-reality mismatch	NO	NO	NO	NO	NO	YES	Low
+FU Order Block panel	Shows liquidity void zones	Indirect	NO	YES (confluence)	NO	NO	Partial	Medium
+Entry / Targets / Invalidation	Would be the highest-value fields if they existed	—	—	—	—	—	—	MISSING ENTIRELY
+SECTION 10 — FINAL DISPLAY GAP ANALYSIS
+What Should Be Displayed (per V71 architecture): Market Bias, Market Narrative, Recommended Action, Confidence, Trade Type, Entry, Targets, Invalidation, Quality — a compact, decision-first surface with diagnostic detail available on demand.
+What Is Displayed: A 95-field, 7-panel diagnostic instrument covering lifecycle phase, belief distributions, physics observation, proximity scoring, hypothesis tracking, prediction validation, multi-timeframe dominance/agreement, ERF energy/resolution state, and FRZ zone tracking — with only Action, Confidence, Quality, and Bias actually satisfying the required decision fields.
+Missing Critical Fields: Entry (price), Targets (price), Invalidation (price) — none exist anywhere in the codebase.
+Broken Fields: None are technically broken (no runtime errors), but two are functionally broken in the "promised but undelivered" sense: Primary Attractor price (calculated, never shown) and Secondary Attractor (calculated, never shown).
+Placeholder Fields: None found — all displayed fields contain real calculated data, not stub/placeholder text.
+Unused Fields (calculated but never displayed): eae_primaryAttractorPrice, eae_secondaryAttractorPrice, eae_secondaryAttractorScore, ede_deliverySpaceScore, re_nodeOpen/re_nodeClosed (as direct labels), FRZ Distance (never calculated at all), FRZ Confidence (never calculated at all), frz_bestScore/frz_bestOwner group (calculated, never surfaced as a distinct "Primary FRZ" row).
+Obsolete Fields: The entire Panel C "Hypothesis Engine" block (hyp_LateExpansion_N etc.) is legacy pre-IE1A scoring that Engine 1A's refactor was explicitly built to supersede — it remains displayed and computed but no longer drives any decision.
+Unused/Duplicate Fields: At least 9 confirmed duplicates across panels — HTF Interp vs L0 Phase, Expected Next/Probability (Panel A vs Panel C), Physics Consensus (Panel B vs Panel C), Active FU Blocks (Panel C vs Panel FU), Narrative (Panel C vs Panel A), Primary Wave (P3 vs Panel A), Grandchild/L0 (P3 vs Panel A), Active Phase (P3 vs Panel A), Capacity/Capacity Score (P3 vs Panel B), Energy State (ERF panel vs Panel A), Resolution State (ERF panel vs Panel A), Fractal Conf (left column vs right column within same P3 panel).
+Misclassified Fields: "Live edge" in Panel C functions as a second, competing recommended-action field alongside "ACTION" in Panel A and "Exec Directive" in Panel P3 — three different sub-systems independently producing a directive-style string, none of which references the other two, risking contradictory signals shown simultaneously.
+Trader Confusion Sources:
+1. Three independent "what should I do" strings (directiveStr, liveDirective, execDirective) that can disagree with each other since they're computed from different logic paths.
+2. 12 duplicate fields shown in multiple panels with different formatting/coloring.
+3. No Entry/Target/Stop price anywhere — trader gets a directional/quality signal with no execution parameters.
+4. FRZ zones sorted by recency, not by score — a high-quality zone can scroll off-screen.
+5. No Advanced Mode separation — all 95 fields visible simultaneously at all times, with internal architecture concepts (Rotation Suppression, Consensus, Control Transfer) sitting alongside actionable fields with no visual hierarchy distinguishing them.
+Dashboard Completeness %: ~45% (high diagnostic completeness, near-zero execution-field completeness)
+Decision Readiness %: ~35% (Bias/Narrative/Action/Confidence/Quality present; Entry/Targets/Invalidation entirely absent; Trade Type only partially present)
+ERF Display Readiness %: ~70% (10 of 12 ERF outputs reach the dashboard in some form; Extended Attractor doesn't exist, Secondary Attractor and Delivery State are calculated but never shown)
+FRZ Display Readiness %: ~65% (registry, score, strength, status all shown; Confidence and Distance fields never built; Primary FRZ not distinctly promoted)
+Attractor Display Readiness %: ~40% (Primary partially shown — label/score only, no price; Secondary built but invisible; Extended never built)
+Overall Trader Usability Score: ~48% — a comprehensive and architecturally sound diagnostic engine undermined by the complete absence of Entry/Target/Invalidation price output, three competing directive strings, ~12 duplicated fields across panels, and no Advanced Mode gating to separate internal-architecture data from trading-relevant data.
