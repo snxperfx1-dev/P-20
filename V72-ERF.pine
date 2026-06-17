@@ -3378,832 +3378,9 @@ string _szA = _ts == "tiny" ? size.tiny : size.small
 // DASHBOARD PANELS A/B/C/FU — split into per-panel functions to satisfy BOTH the
 // body-length limit AND the per-function external-element limit (CE10116).
 // ─────────────────────────────────────────────────────────────────────────────
-f_renderDashA() =>
-    if showTable
-        // ── PANEL A: Command Center (top_right) ──────────────────────────────────
-        var table dashA = table.new(position.top_right, 2, 26,
-             bgcolor=color.new(#0a0a12, 5),
-             border_color=color.new(color.white, 30), border_width=1,
-             frame_color=color.new(color.white, 20), frame_width=1)
 
-        // phCol: sourced from ENGINE 1A canonical phase (sole lifecycle authority)
-        color phCol =
-             ie1a_currentPhase == "Expansion"                   ? color.lime   :
-             ie1a_currentPhase == "Expansion Pre-Convexity"     ? #c084fc      :
-             ie1a_currentPhase == "Expansion Induction"         ? #c084fc      :
-             ie1a_currentPhase == "Expansion Liquidity"         ? #c084fc      :
-             ie1a_currentPhase == "New High" or ie1a_currentPhase == "New Low" ? #00ff88 :
-             ie1a_currentPhase == "Absorption"                  ? color.aqua   :
-             ie1a_currentPhase == "Retracement"                 ? color.silver :
-             ie1a_currentPhase == "Retracement Pre-Convexity"   ? color.silver :
-             ie1a_currentPhase == "Retracement Induction"       ? color.silver :
-             ie1a_currentPhase == "Retracement Liquidity"       ? color.silver :
-             ie1a_currentPhase == "Demand Return" or ie1a_currentPhase == "Supply Return" ? color.orange :
-             color.gray
 
-        string stStr    = structBias ==  1 ? "Bull ▲" : structBias == -1 ? "Bear ▼" : "Neutral"
-        bool isDecaying = math.abs(acceleration) < math.abs(acceleration[1])
-        string accState = isDecaying ? "Easing" : "Building"
 
-        // ════ PANEL A ═════════════════════════════════════════════════════════════
-        int _ra = 0
-
-        if showDA_Header
-            table.cell(dashA, 0, _ra, "SYMPHONY WAVE INTEL v72 ERF",
-                 text_color=color.white, bgcolor=color.new(#0a0a30, 0),
-                 text_size=_szA)
-            // Header shows IE1A canonical phase + IE1A dimension-confidence
-            table.cell(dashA, 1, _ra, ie1a_currentPhase + " [IE1A " + str.tostring(math.round(ie1a_phaseConfidence)) + "%]",
-                 text_color=color.black, bgcolor=phCol,
-                 text_size=_szA)
-            _ra := _ra + 1
-
-        if showDA_Directive
-            f_sep(dashA, _ra, "TRADE DIRECTIVE", _ts)
-            _ra := _ra + 1
-            table.cell(dashA, 0, _ra, "ACTION",
-                 text_color=color.white, bgcolor=directiveBg,
-                 text_size=_szA)
-            table.cell(dashA, 1, _ra, directiveStr,
-                 text_color=directiveCol, bgcolor=directiveBg,
-                 text_size=_szA)
-            _ra := _ra + 1
-            table.cell(dashA, 0, _ra, "Engine",
-                 text_color=color.silver,
-                 text_size=_szA)
-            table.cell(dashA, 1, _ra, engineArmed ? "Armed" : "Locked",
-                 text_color=engineArmed ? color.lime : color.orange,
-                 text_size=_szA)
-            _ra := _ra + 1
-
-        if showDA_WaveCtx
-            f_sep(dashA, _ra, "WAVE CONTEXT", _ts)
-            _ra := _ra + 1
-            // ── L0: What Wave Price Is Trying To Make ─────────────────────────
-            table.cell(dashA, 0, _ra, "L0 Target",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashA, 1, _ra, l0_targetWave,
-                 text_color=direction >= 0 ? color.teal : color.red,
-                 text_size=_szA)
-            _ra := _ra + 1
-            // ── L0: Current Phase Within Curve Cycle ──────────────────────────
-            table.cell(dashA, 0, _ra, "L0 Phase [IE1A]",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashA, 1, _ra, ie1a_currentPhase,
-                 text_color=phCol,
-                 text_size=_szA)
-            _ra := _ra + 1
-            table.cell(dashA, 0, _ra, "IE1A BOS",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashA, 1, _ra,
-                 not ie1a_bos1Active ? "No BOS" :
-                 ie1a_bos2Active     ? "BOS-2 ✓" : "BOS-1 ✓",
-                 text_color=ie1a_bos2Active ? #00ff88 : ie1a_bos1Active ? color.yellow : color.gray,
-                 text_size=_szA)
-            _ra := _ra + 1
-            table.cell(dashA, 0, _ra, "IE1A Induction",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashA, 1, _ra,
-                 ie1a_inductionOriginBroken ? "Origin Broken ✓" :
-                 not na(ie1a_inductionExtreme) ? "Extreme Set" :
-                 not na(ie1a_inductionOrigin)  ? "Origin Set"  : "–",
-                 text_color=ie1a_inductionOriginBroken ? #00ff88 :
-                            not na(ie1a_inductionExtreme) ? color.yellow : color.gray,
-                 text_size=_szA)
-            _ra := _ra + 1
-            table.cell(dashA, 0, _ra, "Wave Type",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashA, 1, _ra,
-                 isRecursiveWave ? "Entry #" + str.tostring(entryCycle) + " Recursive" : "Parent wave",
-                 text_color=isRecursiveWave ? #00ff88 : color.teal,
-                 text_size=_szA)
-            _ra := _ra + 1
-            table.cell(dashA, 0, _ra, "Next Expected",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashA, 1, _ra,
-                 expectedNextPhase + " " + str.tostring(math.round(expectedNextProb)) + "%",
-                 text_color=color.yellow, text_size=_szA)
-            _ra := _ra + 1
-
-        if showDA_MarketState
-            f_sep(dashA, _ra, "MARKET STATE", _ts)
-            _ra := _ra + 1
-            table.cell(dashA, 0, _ra, "Direction",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashA, 1, _ra,
-                 direction == 1 ? "Long ▲" : direction == -1 ? "Short ▼" : "None",
-                 text_color=direction == 1 ? color.teal : direction == -1 ? color.red : color.gray,
-                 text_size=_szA)
-            _ra := _ra + 1
-            table.cell(dashA, 0, _ra, "Structure",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashA, 1, _ra, stStr,
-                 text_color=structBias == 1 ? color.lime : structBias == -1 ? color.red : color.gray,
-                 text_size=_szA)
-            _ra := _ra + 1
-            bool dirStructAlign = direction != 0 and direction == structBias
-            table.cell(dashA, 0, _ra, "Alignment",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashA, 1, _ra,
-                 direction == 0 ? "–" : dirStructAlign ? "✓ Aligned" : "✗ Diverged",
-                 text_color=direction == 0 ? color.gray : dirStructAlign ? color.lime : color.orange,
-                 text_size=_szA)
-            _ra := _ra + 1
-            table.cell(dashA, 0, _ra, "HTF Bias",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashA, 1, _ra,
-                 htfAlign == 1 ? "Bull ▲▲" : htfAlign == -1 ? "Bear ▼▼" : "Mixed",
-                 text_color=htfAlign == 1 ? color.lime : htfAlign == -1 ? color.red : color.gray,
-                 text_size=_szA)
-            _ra := _ra + 1
-            // ERF: Energy State row in Market State
-            table.cell(dashA, 0, _ra, "Energy State [ERF]",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashA, 1, _ra, eae_energyState + " | " + re_resolutionState,
-                 text_color=re_resolutionState == "RESOLVED" ? #00ff88 :
-                            re_resolutionState == "PARTIALLY RESOLVED" ? color.yellow : color.orange,
-                 text_size=_szA)
-            _ra := _ra + 1
-
-        if showDA_HTFStack
-            f_sep(dashA, _ra, "HTF BELIEF STACK", _ts)
-            _ra := _ra + 1
-            table.cell(dashA, 0, _ra, "TF1 (" + tf1 + ") Exp",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashA, 1, _ra,
-                 str.tostring(math.round(expScr_tf1)) + " " + (dir_tf1 == 1 ? "▲" : dir_tf1 == -1 ? "▼" : "·"),
-                 text_color=dir_tf1 == 1 ? color.lime : dir_tf1 == -1 ? color.red : color.gray,
-                 text_size=_szA)
-            _ra := _ra + 1
-            table.cell(dashA, 0, _ra, "TF2 (" + tf2 + ") Exp",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashA, 1, _ra,
-                 str.tostring(math.round(expScr_tf2)) + " " + (dir_tf2 == 1 ? "▲" : dir_tf2 == -1 ? "▼" : "·"),
-                 text_color=dir_tf2 == 1 ? color.lime : dir_tf2 == -1 ? color.red : color.gray,
-                 text_size=_szA)
-            _ra := _ra + 1
-            table.cell(dashA, 0, _ra, "HTF Interp",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashA, 1, _ra, htf_PrimaryInterp,
-                 text_color=htfAlign == 1 ? color.lime : htfAlign == -1 ? color.red : color.gray,
-                 text_size=_szA)
-            _ra := _ra + 1
-            table.cell(dashA, 0, _ra, "Resonance",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashA, 1, _ra, str.tostring(resonance) + " / 2",
-                 text_color=resonance == 2 ? #00ff88 : color.gray,
-                 text_size=_szA)
-            _ra := _ra + 1
-
-        if showDA_Physics
-            f_sep(dashA, _ra, "PHYSICS", _ts)
-            _ra := _ra + 1
-            table.cell(dashA, 0, _ra, "Velocity",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashA, 1, _ra,
-                 str.tostring(math.round(velocityScore)) + "  " + f_sl(velocityScore),
-                 text_color=f_sc(velocityScore), text_size=_szA)
-            _ra := _ra + 1
-
-    0
-
-f_renderDashB() =>
-    if showTable
-        // ── PANEL B: Belief Distributions (bottom_right) ─────────────────────────
-        var table dashB = table.new(position.bottom_right, 2, 30,
-             bgcolor=color.new(#0a0a12, 5),
-             border_color=color.new(color.white, 30), border_width=1,
-             frame_color=color.new(color.white, 20), frame_width=1)
-
-        // ════ PANEL B ═════════════════════════════════════════════════════════════
-        int _rb = 0
-
-        if showDB_Header
-            table.cell(dashB, 0, _rb, "WAVE BELIEF DISTRIBUTIONS",
-                 text_color=color.white, bgcolor=color.new(#0a0a30, 0),
-                 text_size=_szA)
-            table.cell(dashB, 1, _rb, "Score / 100",
-                 bgcolor=color.new(#0a0a30, 0), text_color=color.gray,
-                 text_size=_szA)
-            _rb := _rb + 1
-
-        if showDB_Beliefs
-            f_sep(dashB, _rb, "SIMULTANEOUS BELIEFS", _ts)
-            _rb := _rb + 1
-
-            // ── FIX: use display-safe d_* variables so NaN never reaches the table ──
-            table.cell(dashB, 0, _rb, "Expansion",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashB, 1, _rb, str.tostring(math.round(d_expansionBelief)),
-                 text_color=f_sc(d_expansionBelief),
-                 text_size=_ts == "tiny" ? size.tiny : size.normal)
-            _rb := _rb + 1
-            table.cell(dashB, 0, _rb, "Convexity (Pre-Conv)",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashB, 1, _rb, str.tostring(math.round(d_convexityBelief)),
-                 text_color=f_sc(d_convexityBelief),
-                 text_size=_ts == "tiny" ? size.tiny : size.normal)
-            _rb := _rb + 1
-            table.cell(dashB, 0, _rb, "New High / New Low",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashB, 1, _rb, str.tostring(math.round(d_creationBelief)),
-                 text_color=f_sc(d_creationBelief),
-                 text_size=_ts == "tiny" ? size.tiny : size.normal)
-            _rb := _rb + 1
-            table.cell(dashB, 0, _rb, "Absorption",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashB, 1, _rb, str.tostring(math.round(d_absorptionBelief)),
-                 text_color=f_sc(d_absorptionBelief),
-                 text_size=_ts == "tiny" ? size.tiny : size.normal)
-            _rb := _rb + 1
-            table.cell(dashB, 0, _rb, "Retracement",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashB, 1, _rb, str.tostring(math.round(d_retracementBelief)),
-                 text_color=f_sc(d_retracementBelief),
-                 text_size=_ts == "tiny" ? size.tiny : size.normal)
-            _rb := _rb + 1
-            table.cell(dashB, 0, _rb, "Demand Return",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashB, 1, _rb, str.tostring(math.round(d_demandReturnBelief)),
-                 text_color=f_sc(d_demandReturnBelief),
-                 text_size=_ts == "tiny" ? size.tiny : size.normal)
-            _rb := _rb + 1
-
-        if showDB_Proximity
-            f_sep(dashB, _rb, "PHASE PROXIMITY", _ts)
-            _rb := _rb + 1
-            table.cell(dashB, 0, _rb, "Exp Proximity",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashB, 1, _rb, str.tostring(math.round(expansionProximity)),
-                 text_color=f_sc(expansionProximity), text_size=_szA)
-            _rb := _rb + 1
-            table.cell(dashB, 0, _rb, "Conv Proximity",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashB, 1, _rb, str.tostring(math.round(convexityProximity)),
-                 text_color=f_sc(convexityProximity), text_size=_szA)
-            _rb := _rb + 1
-            table.cell(dashB, 0, _rb, "Create Proximity",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashB, 1, _rb, str.tostring(math.round(creationProximity)),
-                 text_color=f_sc(creationProximity), text_size=_szA)
-            _rb := _rb + 1
-            table.cell(dashB, 0, _rb, "Absorb Proximity",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashB, 1, _rb, str.tostring(math.round(absorptionProximity)),
-                 text_color=f_sc(absorptionProximity), text_size=_szA)
-            _rb := _rb + 1
-            table.cell(dashB, 0, _rb, "Retr Proximity",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashB, 1, _rb, str.tostring(math.round(retracementProximity)),
-                 text_color=f_sc(retracementProximity), text_size=_szA)
-            _rb := _rb + 1
-
-        if showDB_ConvEvid
-            f_sep(dashB, _rb, "CONVEXITY EVIDENCE", _ts)
-            _rb := _rb + 1
-            table.cell(dashB, 0, _rb, "Exp Pre-Conv",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashB, 1, _rb, expansionPreConvSeen ? "Evidence" : "–",
-                 text_color=expansionPreConvSeen ? color.lime : color.orange,
-                 text_size=_szA)
-            _rb := _rb + 1
-            table.cell(dashB, 0, _rb, "Exp Induction",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashB, 1, _rb, expansionInductionConf ? "Evidence" : "–",
-                 text_color=expansionInductionConf ? color.lime : color.orange,
-                 text_size=_szA)
-            _rb := _rb + 1
-            table.cell(dashB, 0, _rb, "Retr Pre-Conv",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashB, 1, _rb, retracementPreConvSeen ? "Evidence" : "–",
-                 text_color=retracementPreConvSeen ? color.lime : color.orange,
-                 text_size=_szA)
-            _rb := _rb + 1
-            table.cell(dashB, 0, _rb, "Retr Induction",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashB, 1, _rb, retracementInductionConf ? "Evidence" : "–",
-                 text_color=retracementInductionConf ? color.lime : color.orange,
-                 text_size=_szA)
-            _rb := _rb + 1
-            table.cell(dashB, 0, _rb, "Induc Type",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashB, 1, _rb,
-                 inducConfidence > 0 ? "Retr induction" : inducConfidence < 0 ? "False CHoCH" : "–",
-                 text_color=inducConfidence > 0 ? color.lime : inducConfidence < 0 ? color.red : color.gray,
-                 text_size=_szA)
-            _rb := _rb + 1
-
-        if showDB_PhysObs
-            f_sep(dashB, _rb, "PHYSICS OBSERVER", _ts)
-            _rb := _rb + 1
-            table.cell(dashB, 0, _rb, "Expansion",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashB, 1, _rb, str.tostring(math.round(obs_ExpansionScore)),
-                 text_color=f_sc(obs_ExpansionScore), text_size=_szA)
-            _rb := _rb + 1
-            table.cell(dashB, 0, _rb, "Decay",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashB, 1, _rb, str.tostring(math.round(obs_DecayScore)),
-                 text_color=f_sc(obs_DecayScore), text_size=_szA)
-            _rb := _rb + 1
-            table.cell(dashB, 0, _rb, "Curvature",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashB, 1, _rb, str.tostring(math.round(obs_CurvatureScore)),
-                 text_color=f_sc(obs_CurvatureScore), text_size=_szA)
-            _rb := _rb + 1
-            table.cell(dashB, 0, _rb, "Absorption",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashB, 1, _rb, str.tostring(math.round(obs_AbsorptionScore)),
-                 text_color=f_sc(obs_AbsorptionScore), text_size=_szA)
-            _rb := _rb + 1
-            table.cell(dashB, 0, _rb, "Liquidity",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashB, 1, _rb, str.tostring(math.round(obs_LiquidityScore)),
-                 text_color=f_sc(obs_LiquidityScore), text_size=_szA)
-            _rb := _rb + 1
-            table.cell(dashB, 0, _rb, "Consensus",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashB, 1, _rb, str.tostring(math.round(physicsConsensus)),
-                 text_color=f_sc(physicsConsensus), text_size=_szA)
-            _rb := _rb + 1
-
-        if showDB_Geometry
-            f_sep(dashB, _rb, "GEOMETRY", _ts)
-            _rb := _rb + 1
-            table.cell(dashB, 0, _rb, "Remaining Room",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashB, 1, _rb,
-                 na(availableSpace) ? "–" : str.tostring(math.round(availableSpace)) + "%  " + cycleCapacity,
-                 text_color=f_sc(nz(availableSpace, 0)), text_size=_szA)
-            _rb := _rb + 1
-            table.cell(dashB, 0, _rb, "Geo Capacity",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashB, 1, _rb,
-                 geoFullConvexityPossible ? "Full Conv" : geoPartialConvexityPossible ? "Partial Conv" : "Absorption only",
-                 text_color=geoFullConvexityPossible ? color.lime : geoPartialConvexityPossible ? color.yellow : color.orange,
-                 text_size=_szA)
-            _rb := _rb + 1
-
-    0
-
-f_renderDashC() =>
-    if showTable
-        // ── PANEL C: Intelligence Engine (top_left) ───────────────────────────────
-        var table dashC = table.new(position.middle_left, 2, 80,
-             bgcolor=color.new(#0a0a12, 5),
-             border_color=color.new(color.white, 30), border_width=1,
-             frame_color=color.new(color.white, 20), frame_width=1)
-
-        // ════ PANEL C ═════════════════════════════════════════════════════════════
-        int _rc = 0
-
-        if showDC_Header
-            table.cell(dashC, 0, _rc, "WAVE INTELLIGENCE ENGINE",
-                 text_color=color.white, bgcolor=color.new(#0a0a30, 0),
-                 text_size=_szA)
-            table.cell(dashC, 1, _rc, "", bgcolor=color.new(#0a0a30, 0))
-            _rc := _rc + 1
-
-        if showDC_Hypothesis
-            f_sep(dashC, _rc, "HYPOTHESIS ENGINE", _ts)
-            _rc := _rc + 1
-            table.cell(dashC, 0, _rc, "Expansion",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, str.tostring(math.round(hyp_LateExpansion_N)) + "%",
-                 text_color=f_sc(hyp_LateExpansion_N), text_size=_szA)
-            _rc := _rc + 1
-            table.cell(dashC, 0, _rc, "Exp Pre-Convexity",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, str.tostring(math.round(hyp_EarlyConvexity_N)) + "%",
-                 text_color=f_sc(hyp_EarlyConvexity_N), text_size=_szA)
-            _rc := _rc + 1
-            table.cell(dashC, 0, _rc, "New High / New Low",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, str.tostring(math.round(hyp_CreationForming_N)) + "%",
-                 text_color=f_sc(hyp_CreationForming_N), text_size=_szA)
-            _rc := _rc + 1
-            table.cell(dashC, 0, _rc, "Absorption",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, str.tostring(math.round(hyp_AbsorptionActive_N)) + "%",
-                 text_color=f_sc(hyp_AbsorptionActive_N), text_size=_szA)
-            _rc := _rc + 1
-            table.cell(dashC, 0, _rc, "Retracement",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, str.tostring(math.round(hyp_RetracementActive_N)) + "%",
-                 text_color=f_sc(hyp_RetracementActive_N), text_size=_szA)
-            _rc := _rc + 1
-            table.cell(dashC, 0, _rc, "Demand Return",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, str.tostring(math.round(hyp_DemandReturn_N)) + "%",
-                 text_color=f_sc(hyp_DemandReturn_N), text_size=_szA)
-            _rc := _rc + 1
-
-        if showDC_Prediction
-            f_sep(dashC, _rc, "PREDICTION ENGINE", _ts)
-            _rc := _rc + 1
-            table.cell(dashC, 0, _rc, "Expected Next",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, expectedNextPhase,
-                 text_color=color.yellow, text_size=_szA)
-            _rc := _rc + 1
-            table.cell(dashC, 0, _rc, "Probability",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, str.tostring(math.round(expectedNextProb)) + "%",
-                 text_color=f_sc(expectedNextProb), text_size=_szA)
-            _rc := _rc + 1
-
-        if showDC_Validation
-            f_sep(dashC, _rc, "VALIDATION ENGINE", _ts)
-            _rc := _rc + 1
-            table.cell(dashC, 0, _rc, "Accuracy 10",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, str.tostring(math.round(predAcc10)) + "%",
-                 text_color=f_sc(predAcc10), text_size=_szA)
-            _rc := _rc + 1
-            table.cell(dashC, 0, _rc, "Accuracy 25",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, str.tostring(math.round(predAcc25)) + "%",
-                 text_color=f_sc(predAcc25), text_size=_szA)
-            _rc := _rc + 1
-            table.cell(dashC, 0, _rc, "Accuracy 50",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, str.tostring(math.round(predAcc50)) + "%",
-                 text_color=f_sc(predAcc50), text_size=_szA)
-            _rc := _rc + 1
-            table.cell(dashC, 0, _rc, "Reliability",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, str.tostring(math.round(predReliability)) + "%",
-                 text_color=f_sc(predReliability), text_size=_szA)
-            _rc := _rc + 1
-
-        if showDC_AdapConf
-            f_sep(dashC, _rc, "ADAPTIVE CONFIDENCE", _ts)
-            _rc := _rc + 1
-            table.cell(dashC, 0, _rc, "Model Confidence",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, str.tostring(math.round(modelConfidence)) + "%",
-                 text_color=f_sc(modelConfidence), text_size=_szA)
-            _rc := _rc + 1
-            table.cell(dashC, 0, _rc, "Wave Deviation",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc,
-                 str.tostring(math.round(waveDeviation)) + (deviationAlert ? "  ⚠" : ""),
-                 text_color=deviationAlert ? color.orange : f_sc(100 - waveDeviation),
-                 text_size=_szA)
-            _rc := _rc + 1
-            table.cell(dashC, 0, _rc, "Physics Consensus",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, str.tostring(math.round(physicsConsensus)) + "%",
-                 text_color=f_sc(physicsConsensus), text_size=_szA)
-            _rc := _rc + 1
-
-        if showDC_M1Warn
-            f_sep(dashC, _rc, "M1 EARLY WARNING", _ts)
-            _rc := _rc + 1
-            table.cell(dashC, 0, _rc, "M1 Signal",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, m1Warning,
-                 text_color=m1Warning == "CRITICAL" ? color.red :
-                            m1Warning == "HIGH"     ? color.orange :
-                            m1Warning == "MODERATE" ? color.yellow : color.gray,
-                 text_size=_szA)
-            _rc := _rc + 1
-            table.cell(dashC, 0, _rc, "Exp Weakening",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, m1ExpansionWeak ? "YES ⚠" : "–",
-                 text_color=m1ExpansionWeak ? color.orange : color.gray,
-                 text_size=_szA)
-            _rc := _rc + 1
-            table.cell(dashC, 0, _rc, "Conv Emerging",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, m1ConvexityEmer ? "YES" : "–",
-                 text_color=m1ConvexityEmer ? #c084fc : color.gray,
-                 text_size=_szA)
-            _rc := _rc + 1
-            table.cell(dashC, 0, _rc, "Abs Emerging",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, m1AbsorptionEmer ? "YES" : "–",
-                 text_color=m1AbsorptionEmer ? color.aqua : color.gray,
-                 text_size=_szA)
-            _rc := _rc + 1
-
-        if showDC_Quality
-            f_sep(dashC, _rc, "SETUP QUALITY", _ts)
-            _rc := _rc + 1
-            table.cell(dashC, 0, _rc, "Bayesian prob",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, str.tostring(math.round(finalProb)) + "%",
-                 text_color=finalProb > 70 ? color.lime : finalProb > 50 ? color.yellow : color.red,
-                 text_size=_szA)
-            _rc := _rc + 1
-            table.cell(dashC, 0, _rc, "Trade readiness",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, str.tostring(math.round(tradeReadiness)) + "%",
-                 text_color=f_sc(tradeReadiness), text_size=_szA)
-            _rc := _rc + 1
-            table.cell(dashC, 0, _rc, "Signal quality",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, grade,
-                 text_color=gradeCol, text_size=_szA)
-            _rc := _rc + 1
-            table.cell(dashC, 0, _rc, "Edge filter",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, edgePassesFilter ? "✓ Pass" : "Filtered",
-                 text_color=edgePassesFilter ? color.lime : color.red,
-                 text_size=_szA)
-            _rc := _rc + 1
-
-        if showDC_DirProb
-            f_sep(dashC, _rc, "DIRECTION PROBABILITY", _ts)
-            _rc := _rc + 1
-            table.cell(dashC, 0, _rc, "Expansion",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, str.tostring(math.round(expansionProbability)) + " pts",
-                 text_color=f_sc(expansionProbability), text_size=_szA)
-            _rc := _rc + 1
-            table.cell(dashC, 0, _rc, "Reversal",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, str.tostring(math.round(reversalProbability)) + " pts",
-                 text_color=f_sc(reversalProbability), text_size=_szA)
-            _rc := _rc + 1
-
-        if showDC_LiveOpp
-            f_sep(dashC, _rc, "LIVE OPPORTUNITY", _ts)
-            _rc := _rc + 1
-            table.cell(dashC, 0, _rc, "Buy score",
-                 text_color=color.white, text_size=_szA)
-            table.cell(dashC, 1, _rc, str.tostring(buyProb, "#.#") + "%",
-                 text_color=color.lime, text_size=_szA)
-            _rc := _rc + 1
-            table.cell(dashC, 0, _rc, "Sell score",
-                 text_color=color.white, text_size=_szA)
-            table.cell(dashC, 1, _rc, str.tostring(sellProb, "#.#") + "%",
-                 text_color=color.red, text_size=_szA)
-            _rc := _rc + 1
-            table.cell(dashC, 0, _rc, "Live edge",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, liveDirective,
-                 text_color=netEdgeAdjusted > 0 ? color.lime : color.red,
-                 text_size=_szA)
-            _rc := _rc + 1
-            table.cell(dashC, 0, _rc, "Net edge",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc,
-                 str.tostring(netEdgeAdjusted, "#.#") + "  " +
-                 (math.abs(netEdgeAdjusted) > 25 ? "Strong" : math.abs(netEdgeAdjusted) > 10 ? "Moderate" : "Weak"),
-                 text_color=netEdgeAdjusted > 0 ? color.lime : color.red,
-                 text_size=_szA)
-            _rc := _rc + 1
-
-        if showDC_Execution
-            f_sep(dashC, _rc, "EXECUTION", _ts)
-            _rc := _rc + 1
-            table.cell(dashC, 0, _rc, "Wave Gen",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, str.tostring(waveGeneration),
-                 text_color=color.aqua, text_size=_szA)
-            _rc := _rc + 1
-
-        // ── DIE Dashboard additions (display-only fields) ──────────────────────
-        if showDIE_Dashboard
-            f_sep(dashC, _rc, "DISPLAY INTELLIGENCE", _ts)
-            _rc := _rc + 1
-            table.cell(dashC, 0, _rc, "Display Mode",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, displayMode,
-                 text_color=displayMode == "Execution" ? color.lime :
-                            displayMode == "Context"   ? color.yellow : color.gray,
-                 text_size=_szA)
-            _rc := _rc + 1
-            table.cell(dashC, 0, _rc, "Density",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, die_densityLevel + " (" + str.tostring(die_density100) + "/100b)",
-                 text_color=die_densityLevel == "Low"    ? color.lime   :
-                            die_densityLevel == "Medium" ? color.yellow : color.orange,
-                 text_size=_szA)
-            _rc := _rc + 1
-            table.cell(dashC, 0, _rc, "Active FU Blocks",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, str.tostring(die_activeFUCount),
-                 text_color=die_activeFUCount > 0 ? color.lime : color.gray,
-                 text_size=_szA)
-            _rc := _rc + 1
-            table.cell(dashC, 0, _rc, "Entry Score",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, str.tostring(math.round(die_entryScore_safe)) + "%",
-                 text_color=f_sc(die_entryScore_safe), text_size=_szA)
-            _rc := _rc + 1
-            table.cell(dashC, 0, _rc, "Narrative",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, die_narrativeDir,
-                 text_color=die_narrCol, text_size=_szA)
-            _rc := _rc + 1
-            table.cell(dashC, 0, _rc, "FU Status",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, die_fuContrib,
-                 text_color=die_fuContrib == "FU CONFIRMED" ? #00ff88 :
-                            die_fuContrib == "FU ASSISTED"  ? color.yellow : color.gray,
-                 text_size=_szA)
-            _rc := _rc + 1
-
-        // ── ENERGY RESOLUTION FRAMEWORK PANEL ────────────────────────────────
-        if showERF_Dashboard
-            f_sep(dashC, _rc, "ENERGY RESOLUTION FRAMEWORK", _ts)
-            _rc := _rc + 1
-
-            // Energy State
-            table.cell(dashC, 0, _rc, "Energy State",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, eae_energyState,
-                 text_color=eae_energyState == "Accumulating" ? color.yellow :
-                            eae_energyState == "Cleaning"     ? #c084fc     :
-                            eae_energyState == "Delivering"   ? color.lime  :
-                            eae_energyState == "Resolving"    ? color.aqua  : color.gray,
-                 text_size=_szA)
-            _rc := _rc + 1
-
-            // Cleaning State (EDE)
-            table.cell(dashC, 0, _rc, "Cleaning State",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, ede_cleaningState,
-                 text_color=ede_state >= 2 and ede_state <= 4 ? #c084fc : color.gray,
-                 text_size=_szA)
-            _rc := _rc + 1
-
-            // Dissipation Progress
-            table.cell(dashC, 0, _rc, "Dissipation %",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, str.tostring(math.round(ede_dissipationProgress)) + "%",
-                 text_color=f_sc(ede_dissipationProgress), text_size=_szA)
-            _rc := _rc + 1
-
-            // Messy = Dissipation recognition
-            table.cell(dashC, 0, _rc, "Messy = Dissipation",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, ede_messyPriceIsDissipation ? "✓ YES" : "–",
-                 text_color=ede_messyPriceIsDissipation ? color.lime : color.gray,
-                 text_size=_szA)
-            _rc := _rc + 1
-
-            // Resolution State (RE)
-            table.cell(dashC, 0, _rc, "Resolution State",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, re_resolutionState,
-                 text_color=re_resolutionState == "RESOLVED"           ? #00ff88    :
-                            re_resolutionState == "PARTIALLY RESOLVED"  ? color.yellow : color.red,
-                 text_size=_szA)
-            _rc := _rc + 1
-
-            // Residual Energy
-            table.cell(dashC, 0, _rc, "Residual Energy",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, str.tostring(math.round(re_residualEnergyScore)),
-                 text_color=re_residualEnergyScore > 60 ? color.red :
-                            re_residualEnergyScore > 30 ? color.yellow : color.lime,
-                 text_size=_szA)
-            _rc := _rc + 1
-
-            // Recursive Completion Score
-            table.cell(dashC, 0, _rc, "Recursive Completion",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc,
-                 str.tostring(re_completedCycles) + "/" + str.tostring(re_expectedCycles) +
-                 "  " + str.tostring(math.round(re_recursiveCompletionScore)) + "%",
-                 text_color=f_sc(re_recursiveCompletionScore), text_size=_szA)
-            _rc := _rc + 1
-
-            // Revisit Probability
-            table.cell(dashC, 0, _rc, "Revisit Probability",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, str.tostring(math.round(re_revisitProbability)) + "%",
-                 text_color=re_revisitProbability > 70 ? color.red :
-                            re_revisitProbability > 40 ? color.orange : color.lime,
-                 text_size=_szA)
-            _rc := _rc + 1
-
-            // Primary Attractor (EAE)
-            table.cell(dashC, 0, _rc, "Primary Attractor",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, eae_primaryAttractorLabel,
-                 text_color=eae_primaryAttractorScore > 60 ? #00ffcc :
-                            eae_primaryAttractorScore > 30 ? color.yellow : color.gray,
-                 text_size=_szA)
-            _rc := _rc + 1
-
-            // Attractor Score
-            table.cell(dashC, 0, _rc, "Attractor Score",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, str.tostring(math.round(eae_primaryAttractorScore)) + "%",
-                 text_color=f_sc(eae_primaryAttractorScore), text_size=_szA)
-            _rc := _rc + 1
-
-            // Rotation Suppression
-            table.cell(dashC, 0, _rc, "Rotation Suppress",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, erf_suppressRotation ? "ACTIVE (Cleaning)" : "–",
-                 text_color=erf_suppressRotation ? color.orange : color.gray,
-                 text_size=_szA)
-            _rc := _rc + 1
-
-            // ERF Confidence
-            table.cell(dashC, 0, _rc, "ERF Confidence",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, str.tostring(math.round(erf_confidence)) + "%",
-                 text_color=f_sc(erf_confidence), text_size=_szA)
-            _rc := _rc + 1
-
-            // Dissipation Confidence
-            table.cell(dashC, 0, _rc, "Dissipation Conf",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashC, 1, _rc, str.tostring(math.round(erf_dissipationConfidence)) + "%",
-                 text_color=f_sc(erf_dissipationConfidence), text_size=_szA)
-            _rc := _rc + 1
-
-    0
-
-f_renderDashFU() =>
-    if showTable
-        // ── FU Order Blocks Dashboard Panel ───────────────────────────────────
-        if showDFU_Panel
-            var table dashFU = table.new(position.middle_right, 2, 12,
-                 bgcolor=color.new(#0a0a12, 5),
-                 border_color=color.new(color.white, 30), border_width=1,
-                 frame_color=color.new(color.white, 20), frame_width=1)
-
-            int _rf = 0
-            if showDFU_Header
-                table.cell(dashFU, 0, _rf, "FU ORDER BLOCKS",
-                     text_color=color.white, bgcolor=color.new(#0a0a30, 0),
-                     text_size=_szA)
-                table.cell(dashFU, 1, _rf, "DIE Engine",
-                     text_color=color.new(color.white, 30), bgcolor=color.new(#0a0a30, 0),
-                     text_size=_szA)
-                _rf := _rf + 1
-
-            if showDFU_Stats
-                f_sep(dashFU, _rf, "FU STATISTICS", _ts)
-                _rf := _rf + 1
-                table.cell(dashFU, 0, _rf, "Active Blocks",
-                     text_color=color.silver, text_size=_szA)
-                table.cell(dashFU, 1, _rf, str.tostring(die_activeFUCount),
-                     text_color=die_activeFUCount > 0 ? color.lime : color.gray,
-                     text_size=_szA)
-                _rf := _rf + 1
-                table.cell(dashFU, 0, _rf, "Bull FU Active",
-                     text_color=color.silver, text_size=_szA)
-                table.cell(dashFU, 1, _rf, die_anyBullFUActive ? "YES ▲" : "–",
-                     text_color=die_anyBullFUActive ? color.lime : color.gray,
-                     text_size=_szA)
-                _rf := _rf + 1
-                table.cell(dashFU, 0, _rf, "Bear FU Active",
-                     text_color=color.silver, text_size=_szA)
-                table.cell(dashFU, 1, _rf, die_anyBearFUActive ? "YES ▼" : "–",
-                     text_color=die_anyBearFUActive ? color.red : color.gray,
-                     text_size=_szA)
-                _rf := _rf + 1
-                table.cell(dashFU, 0, _rf, "Confluence",
-                     text_color=color.silver, text_size=_szA)
-                table.cell(dashFU, 1, _rf,
-                     die_entryFUConfluence ? "⚡ ENTRY+FU" : "–",
-                     text_color=die_entryFUConfluence ? #ffdd00 : color.gray,
-                     text_size=_szA)
-                _rf := _rf + 1
-
-            if showDFU_LastBlock
-                f_sep(dashFU, _rf, "LAST FU BLOCK", _ts)
-                _rf := _rf + 1
-                int _fuSz = array.size(fu_dir)
-                if _fuSz > 0
-                    int _lastFuDir = array.get(fu_dir, _fuSz - 1)
-                    string _lastFuSt = array.get(fu_state, _fuSz - 1)
-                    int _lastFuAge  = bar_index - array.get(fu_birthBar, _fuSz - 1)
-                    table.cell(dashFU, 0, _rf, "Direction",
-                         text_color=color.silver, text_size=_szA)
-                    table.cell(dashFU, 1, _rf, _lastFuDir == 1 ? "Bull ▲" : "Bear ▼",
-                         text_color=_lastFuDir == 1 ? color.lime : color.red,
-                         text_size=_szA)
-                    _rf := _rf + 1
-                    table.cell(dashFU, 0, _rf, "State",
-                         text_color=color.silver, text_size=_szA)
-                    table.cell(dashFU, 1, _rf, _lastFuSt,
-                         text_color=_lastFuSt == "Interacting" ? color.yellow :
-                                    _lastFuSt == "Fresh"       ? color.lime   :
-                                    _lastFuSt == "Exhausted"   ? color.gray   : color.silver,
-                         text_size=_szA)
-                    _rf := _rf + 1
-                    table.cell(dashFU, 0, _rf, "Age (bars)",
-                         text_color=color.silver, text_size=_szA)
-                    table.cell(dashFU, 1, _rf, str.tostring(_lastFuAge),
-                         text_color=_lastFuAge < 10 ? color.lime : color.gray,
-                         text_size=_szA)
-                    _rf := _rf + 1
-                else
-                    table.cell(dashFU, 0, _rf, "No FU blocks detected",
-                         text_color=color.gray, text_size=_szA)
-                    table.cell(dashFU, 1, _rf, "–",
-                         text_color=color.gray, text_size=_szA)
-                    _rf := _rf + 0
-    0
 
 
 
@@ -4648,327 +3825,6 @@ string execDirective =
 // ─────────────────────────────────────────────────────────────────────────────
 // PHASE 3 DASHBOARD — wrapped in function to satisfy body-length limit
 // ─────────────────────────────────────────────────────────────────────────────
-f_renderDashP3() =>
-    if showTable
-        // Compact "split" layout: 4 columns = two side-by-side label/value pairs.
-        // Left pair = columns 0-1, Right pair = columns 2-3.
-        // This roughly halves the panel height vs. the old single-pair layout
-        // and the panel is anchored to the middle of the chart.
-        var table dashP3 = table.new(position.bottom_center, 4, 32,
-             bgcolor=color.new(#0a0a12, 5),
-             border_color=color.new(color.white, 30), border_width=1,
-             frame_color=color.new(color.white, 20), frame_width=1)
-
-        if showDP3_Header
-            table.cell(dashP3, 0, 0, "RECURSIVE WAVE INTEL v71",
-                 text_color=color.white, bgcolor=color.new(#10103a, 0),
-                 text_size=_szA)
-            table.cell(dashP3, 1, 0, "Unified Wave Lifecycle",
-                 text_color=color.new(color.white, 30), bgcolor=color.new(#10103a, 0),
-                 text_size=_szA)
-            table.cell(dashP3, 2, 0, "RECURSIVE WAVE INTEL v71",
-                 text_color=color.white, bgcolor=color.new(#10103a, 0),
-                 text_size=_szA)
-            table.cell(dashP3, 3, 0, "Phase 3 Engine",
-                 text_color=color.new(color.white, 30), bgcolor=color.new(#10103a, 0),
-                 text_size=_szA)
-
-        int _rpL = 1
-        int _rpR = 1
-
-        // ═══════════════ LEFT COLUMN GROUP (columns 0-1) ═══════════════
-
-        if showDP3_Narrative
-            f_sep(dashP3, _rpL, "WAVE NARRATIVE", _ts)
-            _rpL := _rpL + 1
-            table.cell(dashP3, 0, _rpL, "HTF Structure",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 1, _rpL, narr_grandchild,
-                 text_color=color.yellow, text_size=_szA)
-            _rpL := _rpL + 1
-            table.cell(dashP3, 0, _rpL, "Child Wave",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 1, _rpL, narr_child,
-                 text_color=color.aqua, text_size=_szA)
-            _rpL := _rpL + 1
-            table.cell(dashP3, 0, _rpL, "Primary Wave",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 1, _rpL, narr_primary,
-                 text_color=color.lime, text_size=_szA)
-            _rpL := _rpL + 1
-            table.cell(dashP3, 0, _rpL, "M1 Sensor",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 1, _rpL, narr_micro,
-                 text_color=color.new(#c084fc, 0), text_size=_szA)
-            _rpL := _rpL + 1
-            table.cell(dashP3, 0, _rpL, "Outcome",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 1, _rpL, narr_outcome,
-                 text_color=color.white, text_size=_szA)
-            _rpL := _rpL + 1
-            table.cell(dashP3, 0, _rpL, "Fractal Conf",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 1, _rpL,
-                 str.tostring(math.round(fractalConfidence)) + "%  " + fractalConfLabel,
-                 text_color=f_sc(fractalConfidence), text_size=_szA)
-            _rpL := _rpL + 1
-
-        if showDP3_Nested
-            f_sep(dashP3, _rpL, "NESTED WAVE RELATIONSHIPS", _ts)
-            _rpL := _rpL + 1
-            table.cell(dashP3, 0, _rpL, "Parent (HTF)",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 1, _rpL, l2_targetWave + "\n" + l2_currentPhase,
-                 text_color=color.yellow, text_size=_szA)
-            _rpL := _rpL + 1
-            table.cell(dashP3, 0, _rpL, "Child (ITF)",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 1, _rpL, l1_targetWave + "\n" + l1_currentPhase,
-                 text_color=color.aqua, text_size=_szA)
-            _rpL := _rpL + 1
-            table.cell(dashP3, 0, _rpL, "Grandchild (TF)",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 1, _rpL, l0_targetWave + "\n" + l0_currentPhase,
-                 text_color=color.lime, text_size=_szA)
-            _rpL := _rpL + 1
-            table.cell(dashP3, 0, _rpL, "P→C Relation",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 1, _rpL, parentChildRelationship,
-                 text_color=parentChildHarmonic ? color.lime : parentState == childState ? color.yellow : color.orange,
-                 text_size=_szA)
-            _rpL := _rpL + 1
-            table.cell(dashP3, 0, _rpL, "C→GC Relation",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 1, _rpL, childGrandchildRelationship,
-                 text_color=childGrandchildHarmonic ? color.lime : color.orange,
-                 text_size=_szA)
-            _rpL := _rpL + 1
-
-        if showDP3_Dominance
-            f_sep(dashP3, _rpL, "WAVE DOMINANCE", _ts)
-            _rpL := _rpL + 1
-            table.cell(dashP3, 0, _rpL, "L2 HTF Dom",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 1, _rpL, str.tostring(math.round(l2_dominance)) + "%",
-                 text_color=f_sc(l2_dominance), text_size=_szA)
-            _rpL := _rpL + 1
-            table.cell(dashP3, 0, _rpL, "L1 ITF Dom",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 1, _rpL, str.tostring(math.round(l1_dominance)) + "%",
-                 text_color=f_sc(l1_dominance), text_size=_szA)
-            _rpL := _rpL + 1
-            table.cell(dashP3, 0, _rpL, "L0 Primary Dom",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 1, _rpL, str.tostring(math.round(nz(l0_dominance, 0.0))) + "%",
-                 text_color=f_sc(nz(l0_dominance, 0.0)), text_size=_szA)
-            _rpL := _rpL + 1
-            table.cell(dashP3, 0, _rpL, "L3 Micro Dom",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 1, _rpL, str.tostring(math.round(l3_dominance)) + "%",
-                 text_color=f_sc(l3_dominance), text_size=_szA)
-            _rpL := _rpL + 1
-            table.cell(dashP3, 0, _rpL, "Dominant Level",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 1, _rpL, dominantWaveLevel,
-                 text_color=color.white, text_size=_szA)
-            _rpL := _rpL + 1
-
-        if showDP3_Fusion
-            f_sep(dashP3, _rpL, "MTF FUSION LAYER", _ts)
-            _rpL := _rpL + 1
-            table.cell(dashP3, 0, _rpL, "Fusion Interp",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 1, _rpL, fusionInterpretation,
-                 text_color=htfTrendIntact ? color.lime : color.orange,
-                 text_size=_szA)
-            _rpL := _rpL + 1
-            table.cell(dashP3, 0, _rpL, "Fusion Conf",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 1, _rpL, str.tostring(math.round(fusionConfidence)) + "%",
-                 text_color=f_sc(fusionConfidence), text_size=_szA)
-            _rpL := _rpL + 1
-            table.cell(dashP3, 0, _rpL, "HTF Trend",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 1, _rpL, htfTrendIntact ? "Intact ✓" : "Weakening ⚠",
-                 text_color=htfTrendIntact ? color.lime : color.orange,
-                 text_size=_szA)
-            _rpL := _rpL + 1
-            table.cell(dashP3, 0, _rpL, "LTF Reversal",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 1, _rpL, ltfReversalForming ? "Forming ⚠" : "Not yet",
-                 text_color=ltfReversalForming ? color.orange : color.gray,
-                 text_size=_szA)
-            _rpL := _rpL + 1
-
-        if showDP3_Agreement
-            f_sep(dashP3, _rpL, "WAVE AGREEMENT", _ts)
-            _rpL := _rpL + 1
-            table.cell(dashP3, 0, _rpL, "L0-L1 Agreement",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 1, _rpL, str.tostring(math.round(waveAgreement_l0l1)) + "%",
-                 text_color=f_sc(waveAgreement_l0l1), text_size=_szA)
-            _rpL := _rpL + 1
-            table.cell(dashP3, 0, _rpL, "L1-L2 Agreement",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 1, _rpL, str.tostring(math.round(waveAgreement_l1l2)) + "%",
-                 text_color=f_sc(waveAgreement_l1l2), text_size=_szA)
-            _rpL := _rpL + 1
-            table.cell(dashP3, 0, _rpL, "L0-L2 Agreement",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 1, _rpL, str.tostring(math.round(waveAgreement_l0l2)) + "%",
-                 text_color=f_sc(waveAgreement_l0l2), text_size=_szA)
-            _rpL := _rpL + 1
-            table.cell(dashP3, 0, _rpL, "Overall Agreement",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 1, _rpL,
-                 str.tostring(math.round(waveAgreement)) + "%  " + waveAgreementLabel,
-                 text_color=f_sc(waveAgreement), text_size=_szA)
-            _rpL := _rpL + 1
-
-        // ═══════════════ RIGHT COLUMN GROUP (columns 2-3) ═══════════════
-
-        if showDP3_FractalConf
-            f_sep2(dashP3, _rpR, "FRACTAL CONFIDENCE", _ts)
-            _rpR := _rpR + 1
-            table.cell(dashP3, 2, _rpR, "L2 HTF Conf",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 3, _rpR, str.tostring(math.round(l2_confidence)) + "%",
-                 text_color=f_sc(l2_confidence), text_size=_szA)
-            _rpR := _rpR + 1
-            table.cell(dashP3, 2, _rpR, "L1 ITF Conf",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 3, _rpR, str.tostring(math.round(l1_confidence)) + "%",
-                 text_color=f_sc(l1_confidence), text_size=_szA)
-            _rpR := _rpR + 1
-            table.cell(dashP3, 2, _rpR, "L0 Primary Conf",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 3, _rpR, str.tostring(math.round(nz(l0_confidence, 0.0))) + "%",
-                 text_color=f_sc(nz(l0_confidence, 0.0)), text_size=_szA)
-            _rpR := _rpR + 1
-            table.cell(dashP3, 2, _rpR, "L3 Micro Conf",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 3, _rpR, str.tostring(math.round(l3_confidence)) + "%",
-                 text_color=f_sc(l3_confidence), text_size=_szA)
-            _rpR := _rpR + 1
-            table.cell(dashP3, 2, _rpR, "Fractal Conf",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 3, _rpR,
-                 str.tostring(math.round(fractalConfidence)) + "%  " + fractalConfLabel,
-                 text_color=f_sc(fractalConfidence), text_size=_szA)
-            _rpR := _rpR + 1
-
-        if showDP3_Cycles
-            f_sep2(dashP3, _rpR, "RECURSIVE ENTRY CYCLES", _ts)
-            _rpR := _rpR + 1
-            table.cell(dashP3, 2, _rpR, "Cycle 1",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 3, _rpR, str.tostring(math.round(nz(cycle1_completion, 0.0))) + "% complete",
-                 text_color=f_sc(nz(cycle1_completion, 0.0)), text_size=_szA)
-            _rpR := _rpR + 1
-            table.cell(dashP3, 2, _rpR, "Cycle 2",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 3, _rpR, str.tostring(math.round(nz(cycle2_completion, 0.0))) + "% complete",
-                 text_color=f_sc(nz(cycle2_completion, 0.0)), text_size=_szA)
-            _rpR := _rpR + 1
-            table.cell(dashP3, 2, _rpR, "Cycle 3",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 3, _rpR, str.tostring(math.round(nz(cycle3_completion, 0.0))) + "% complete",
-                 text_color=f_sc(nz(cycle3_completion, 0.0)), text_size=_szA)
-            _rpR := _rpR + 1
-            table.cell(dashP3, 2, _rpR, "Cycle 4",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 3, _rpR, str.tostring(math.round(nz(cycle4_completion, 0.0))) + "% complete",
-                 text_color=f_sc(nz(cycle4_completion, 0.0)), text_size=_szA)
-            _rpR := _rpR + 1
-            table.cell(dashP3, 2, _rpR, "Active Phase",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 3, _rpR, activeCyclePhase,
-                 text_color=color.white, text_size=_szA)
-            _rpR := _rpR + 1
-
-        if showDP3_GeoCap
-            f_sep2(dashP3, _rpR, "GEOMETRIC CAPACITY", _ts)
-            _rpR := _rpR + 1
-            table.cell(dashP3, 2, _rpR, "Capacity",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 3, _rpR, geoCapacityNarrative,
-                 text_color=geoFullConvexityPossible ? color.lime : geoPartialConvexityPossible ? color.yellow : color.orange,
-                 text_size=_szA)
-            _rpR := _rpR + 1
-            table.cell(dashP3, 2, _rpR, "Capacity Score",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 3, _rpR, str.tostring(math.round(geoCapacityScore)) + "%",
-                 text_color=f_sc(geoCapacityScore), text_size=_szA)
-            _rpR := _rpR + 1
-
-        if showDP3_ExecProb
-            f_sep2(dashP3, _rpR, "EXECUTION PROBABILITY V2", _ts)
-            _rpR := _rpR + 1
-            table.cell(dashP3, 2, _rpR, "Exec Directive",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 3, _rpR, execDirective,
-                 text_color=execProb_StandDown >= 60 ? color.red : color.white,
-                 text_size=_szA)
-            _rpR := _rpR + 1
-            table.cell(dashP3, 2, _rpR, "Continuation",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 3, _rpR, str.tostring(math.round(execProb_Continuation)) + "%",
-                 text_color=f_sc(execProb_Continuation), text_size=_szA)
-            _rpR := _rpR + 1
-            table.cell(dashP3, 2, _rpR, "Reversal",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 3, _rpR, str.tostring(math.round(execProb_Reversal)) + "%",
-                 text_color=f_sc(execProb_Reversal), text_size=_szA)
-            _rpR := _rpR + 1
-            table.cell(dashP3, 2, _rpR, "Expansion",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 3, _rpR, str.tostring(math.round(execProb_Expansion)) + "%",
-                 text_color=f_sc(execProb_Expansion), text_size=_szA)
-            _rpR := _rpR + 1
-            table.cell(dashP3, 2, _rpR, "New High / New Low",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 3, _rpR, str.tostring(math.round(execProb_Creation)) + "%",
-                 text_color=f_sc(execProb_Creation), text_size=_szA)
-            _rpR := _rpR + 1
-            table.cell(dashP3, 2, _rpR, "Absorption",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 3, _rpR, str.tostring(math.round(execProb_Absorption)) + "%",
-                 text_color=f_sc(execProb_Absorption), text_size=_szA)
-            _rpR := _rpR + 1
-            table.cell(dashP3, 2, _rpR, "Stand Down",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 3, _rpR, str.tostring(math.round(execProb_StandDown)) + "%",
-                 text_color=execProb_StandDown >= 60 ? color.red : f_sc(100 - execProb_StandDown),
-                 text_size=_szA)
-            _rpR := _rpR + 1
-
-        if showDP3_WaveProgress
-            f_sep2(dashP3, _rpR, "MULTI-LEVEL WAVE PROGRESS", _ts)
-            _rpR := _rpR + 1
-            table.cell(dashP3, 2, _rpR, "L2 (HTF) Progress",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 3, _rpR,
-                 l2_targetWave + "\n" + l2_currentPhase,
-                 text_color=color.yellow, text_size=_szA)
-            _rpR := _rpR + 1
-            table.cell(dashP3, 2, _rpR, "L1 (ITF) Progress",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 3, _rpR,
-                 l1_targetWave + "\n" + l1_currentPhase,
-                 text_color=color.aqua, text_size=_szA)
-            _rpR := _rpR + 1
-            table.cell(dashP3, 2, _rpR, "L3 (Micro) Progress",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 3, _rpR,
-                 l3_targetWave + "\n" + l3_currentPhase,
-                 text_color=color.new(#c084fc, 0), text_size=_szA)
-            _rpR := _rpR + 1
-            table.cell(dashP3, 2, _rpR, "L0 (Primary) Progress",
-                 text_color=color.silver, text_size=_szA)
-            table.cell(dashP3, 3, _rpR,
-                 l0_targetWave + "\n" + l0_currentPhase,
-                 text_color=color.lime, text_size=_szA)
-            _rpR := _rpR + 1
 
 
 
@@ -4976,11 +3832,292 @@ f_renderDashP3() =>
 // ═══════════════════════════════════════════════════════════════════════════════
 // ── Phase 3 high-conviction alert ─────────────────────────────────────────────
 // ── Dashboard & P3 render calls ─────────────────────────────────────────────
-f_renderDashA()
-f_renderDashB()
-f_renderDashC()
-f_renderDashFU()
-f_renderDashP3()
+f_renderPanel1() =>
+    if showTable
+        var table panel1 = table.new(position.top_left, 2, 90,
+             bgcolor=color.new(#0a0a12, 5),
+             border_color=color.new(color.white, 30), border_width=1,
+             frame_color=color.new(color.white, 20), frame_width=1)
+        color phCol =
+             ie1a_currentPhase == "Expansion"                   ? color.lime   :
+             ie1a_currentPhase == "Expansion Pre-Convexity"     ? #c084fc      :
+             ie1a_currentPhase == "Expansion Induction"         ? #c084fc      :
+             ie1a_currentPhase == "Expansion Liquidity"         ? #c084fc      :
+             ie1a_currentPhase == "New High" or ie1a_currentPhase == "New Low" ? #00ff88 :
+             ie1a_currentPhase == "Absorption"                  ? color.aqua   :
+             ie1a_currentPhase == "Retracement"                 ? color.silver :
+             ie1a_currentPhase == "Retracement Pre-Convexity"   ? color.silver :
+             ie1a_currentPhase == "Retracement Induction"       ? color.silver :
+             ie1a_currentPhase == "Retracement Liquidity"       ? color.silver :
+             ie1a_currentPhase == "Demand Return" or ie1a_currentPhase == "Supply Return" ? color.orange :
+             color.gray
+        string stStr    = structBias ==  1 ? "Bull ▲" : structBias == -1 ? "Bear ▼" : "Neutral"
+        bool isDecaying = math.abs(acceleration) < math.abs(acceleration[1])
+        string accState = isDecaying ? "Easing" : "Building"
+        int _p1 = 0
+        if showDA_WaveCtx
+            f_sep(panel1, _p1, "WAVE CONTEXT", _ts)
+            _p1 := _p1 + 1
+            // ── L0: What Wave Price Is Trying To Make ─────────────────────────
+            table.cell(panel1, 0, _p1, "L0 Target",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(panel1, 1, _p1, l0_targetWave,
+                 text_color=direction >= 0 ? color.teal : color.red,
+                 text_size=_szA)
+            _p1 := _p1 + 1
+            // ── L0: Current Phase Within Curve Cycle ──────────────────────────
+            table.cell(panel1, 0, _p1, "L0 Phase [IE1A]",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(panel1, 1, _p1, ie1a_currentPhase,
+                 text_color=phCol,
+                 text_size=_szA)
+            _p1 := _p1 + 1
+            table.cell(panel1, 0, _p1, "IE1A BOS",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(panel1, 1, _p1,
+                 not ie1a_bos1Active ? "No BOS" :
+                 ie1a_bos2Active     ? "BOS-2 ✓" : "BOS-1 ✓",
+                 text_color=ie1a_bos2Active ? #00ff88 : ie1a_bos1Active ? color.yellow : color.gray,
+                 text_size=_szA)
+            _p1 := _p1 + 1
+            table.cell(panel1, 0, _p1, "IE1A Induction",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(panel1, 1, _p1,
+                 ie1a_inductionOriginBroken ? "Origin Broken ✓" :
+                 not na(ie1a_inductionExtreme) ? "Extreme Set" :
+                 not na(ie1a_inductionOrigin)  ? "Origin Set"  : "–",
+                 text_color=ie1a_inductionOriginBroken ? #00ff88 :
+                            not na(ie1a_inductionExtreme) ? color.yellow : color.gray,
+                 text_size=_szA)
+            _p1 := _p1 + 1
+            table.cell(panel1, 0, _p1, "Wave Type",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(panel1, 1, _p1,
+                 isRecursiveWave ? "Entry #" + str.tostring(entryCycle) + " Recursive" : "Parent wave",
+                 text_color=isRecursiveWave ? #00ff88 : color.teal,
+                 text_size=_szA)
+            _p1 := _p1 + 1
+            table.cell(panel1, 0, _p1, "Next Expected",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(panel1, 1, _p1,
+                 expectedNextPhase + " " + str.tostring(math.round(expectedNextProb)) + "%",
+                 text_color=color.yellow, text_size=_szA)
+            _p1 := _p1 + 1
+        if showDA_MarketState
+            f_sep(panel1, _p1, "MARKET STATE", _ts)
+            _p1 := _p1 + 1
+            table.cell(panel1, 0, _p1, "Direction",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(panel1, 1, _p1,
+                 direction == 1 ? "Long ▲" : direction == -1 ? "Short ▼" : "None",
+                 text_color=direction == 1 ? color.teal : direction == -1 ? color.red : color.gray,
+                 text_size=_szA)
+            _p1 := _p1 + 1
+            table.cell(panel1, 0, _p1, "Structure",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(panel1, 1, _p1, stStr,
+                 text_color=structBias == 1 ? color.lime : structBias == -1 ? color.red : color.gray,
+                 text_size=_szA)
+            _p1 := _p1 + 1
+            bool dirStructAlign = direction != 0 and direction == structBias
+            table.cell(panel1, 0, _p1, "Alignment",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(panel1, 1, _p1,
+                 direction == 0 ? "–" : dirStructAlign ? "✓ Aligned" : "✗ Diverged",
+                 text_color=direction == 0 ? color.gray : dirStructAlign ? color.lime : color.orange,
+                 text_size=_szA)
+            _p1 := _p1 + 1
+            table.cell(panel1, 0, _p1, "HTF Bias",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(panel1, 1, _p1,
+                 htfAlign == 1 ? "Bull ▲▲" : htfAlign == -1 ? "Bear ▼▼" : "Mixed",
+                 text_color=htfAlign == 1 ? color.lime : htfAlign == -1 ? color.red : color.gray,
+                 text_size=_szA)
+            _p1 := _p1 + 1
+            // ERF: Energy State row in Market State
+            table.cell(panel1, 0, _p1, "Energy State [ERF]",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(panel1, 1, _p1, eae_energyState + " | " + re_resolutionState,
+                 text_color=re_resolutionState == "RESOLVED" ? #00ff88 :
+                            re_resolutionState == "PARTIALLY RESOLVED" ? color.yellow : color.orange,
+                 text_size=_szA)
+            _p1 := _p1 + 1
+        if showDA_HTFStack
+            f_sep(panel1, _p1, "HTF BELIEF STACK", _ts)
+            _p1 := _p1 + 1
+            table.cell(panel1, 0, _p1, "TF1 (" + tf1 + ") Exp",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(panel1, 1, _p1,
+                 str.tostring(math.round(expScr_tf1)) + " " + (dir_tf1 == 1 ? "▲" : dir_tf1 == -1 ? "▼" : "·"),
+                 text_color=dir_tf1 == 1 ? color.lime : dir_tf1 == -1 ? color.red : color.gray,
+                 text_size=_szA)
+            _p1 := _p1 + 1
+            table.cell(panel1, 0, _p1, "TF2 (" + tf2 + ") Exp",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(panel1, 1, _p1,
+                 str.tostring(math.round(expScr_tf2)) + " " + (dir_tf2 == 1 ? "▲" : dir_tf2 == -1 ? "▼" : "·"),
+                 text_color=dir_tf2 == 1 ? color.lime : dir_tf2 == -1 ? color.red : color.gray,
+                 text_size=_szA)
+            _p1 := _p1 + 1
+            table.cell(panel1, 0, _p1, "HTF Interp",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(panel1, 1, _p1, htf_PrimaryInterp,
+                 text_color=htfAlign == 1 ? color.lime : htfAlign == -1 ? color.red : color.gray,
+                 text_size=_szA)
+            _p1 := _p1 + 1
+            table.cell(panel1, 0, _p1, "Resonance",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(panel1, 1, _p1, str.tostring(resonance) + " / 2",
+                 text_color=resonance == 2 ? #00ff88 : color.gray,
+                 text_size=_szA)
+            _p1 := _p1 + 1
+        if showDB_Beliefs
+            f_sep(panel1, _p1, "SIMULTANEOUS BELIEFS", _ts)
+            _p1 := _p1 + 1
+
+            // ── FIX: use display-safe d_* variables so NaN never reaches the table ──
+            table.cell(panel1, 0, _p1, "Expansion",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(panel1, 1, _p1, str.tostring(math.round(d_expansionBelief)),
+                 text_color=f_sc(d_expansionBelief),
+                 text_size=_ts == "tiny" ? size.tiny : size.normal)
+            _p1 := _p1 + 1
+            table.cell(panel1, 0, _p1, "Convexity (Pre-Conv)",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(panel1, 1, _p1, str.tostring(math.round(d_convexityBelief)),
+                 text_color=f_sc(d_convexityBelief),
+                 text_size=_ts == "tiny" ? size.tiny : size.normal)
+            _p1 := _p1 + 1
+            table.cell(panel1, 0, _p1, "New High / New Low",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(panel1, 1, _p1, str.tostring(math.round(d_creationBelief)),
+                 text_color=f_sc(d_creationBelief),
+                 text_size=_ts == "tiny" ? size.tiny : size.normal)
+            _p1 := _p1 + 1
+            table.cell(panel1, 0, _p1, "Absorption",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(panel1, 1, _p1, str.tostring(math.round(d_absorptionBelief)),
+                 text_color=f_sc(d_absorptionBelief),
+                 text_size=_ts == "tiny" ? size.tiny : size.normal)
+            _p1 := _p1 + 1
+            table.cell(panel1, 0, _p1, "Retracement",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(panel1, 1, _p1, str.tostring(math.round(d_retracementBelief)),
+                 text_color=f_sc(d_retracementBelief),
+                 text_size=_ts == "tiny" ? size.tiny : size.normal)
+            _p1 := _p1 + 1
+            table.cell(panel1, 0, _p1, "Demand Return",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(panel1, 1, _p1, str.tostring(math.round(d_demandReturnBelief)),
+                 text_color=f_sc(d_demandReturnBelief),
+                 text_size=_ts == "tiny" ? size.tiny : size.normal)
+            _p1 := _p1 + 1
+        if showDB_Geometry
+            f_sep(panel1, _p1, "GEOMETRY", _ts)
+            _p1 := _p1 + 1
+            table.cell(panel1, 0, _p1, "Remaining Room",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(panel1, 1, _p1,
+                 na(availableSpace) ? "–" : str.tostring(math.round(availableSpace)) + "%  " + cycleCapacity,
+                 text_color=f_sc(nz(availableSpace, 0)), text_size=_szA)
+            _p1 := _p1 + 1
+            table.cell(panel1, 0, _p1, "Geo Capacity",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(panel1, 1, _p1,
+                 geoFullConvexityPossible ? "Full Conv" : geoPartialConvexityPossible ? "Partial Conv" : "Absorption only",
+                 text_color=geoFullConvexityPossible ? color.lime : geoPartialConvexityPossible ? color.yellow : color.orange,
+                 text_size=_szA)
+            _p1 := _p1 + 1
+        if showDP3_Narrative
+            f_sep(panel1, _p1, "WAVE NARRATIVE", _ts)
+            _p1 := _p1 + 1
+            table.cell(panel1, 0, _p1, "HTF Structure",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(panel1, 1, _p1, narr_grandchild,
+                 text_color=color.yellow, text_size=_szA)
+            _p1 := _p1 + 1
+            table.cell(panel1, 0, _p1, "Child Wave",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(panel1, 1, _p1, narr_child,
+                 text_color=color.aqua, text_size=_szA)
+            _p1 := _p1 + 1
+            table.cell(panel1, 0, _p1, "Primary Wave",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(panel1, 1, _p1, narr_primary,
+                 text_color=color.lime, text_size=_szA)
+            _p1 := _p1 + 1
+            table.cell(panel1, 0, _p1, "M1 Sensor",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(panel1, 1, _p1, narr_micro,
+                 text_color=color.new(#c084fc, 0), text_size=_szA)
+            _p1 := _p1 + 1
+            table.cell(panel1, 0, _p1, "Outcome",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(panel1, 1, _p1, narr_outcome,
+                 text_color=color.white, text_size=_szA)
+            _p1 := _p1 + 1
+            table.cell(panel1, 0, _p1, "Fractal Conf",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(panel1, 1, _p1,
+                 str.tostring(math.round(fractalConfidence)) + "%  " + fractalConfLabel,
+                 text_color=f_sc(fractalConfidence), text_size=_szA)
+            _p1 := _p1 + 1
+        if showDP3_Fusion
+            f_sep(panel1, _p1, "MTF FUSION LAYER", _ts)
+            _p1 := _p1 + 1
+            table.cell(panel1, 0, _p1, "Fusion Interp",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(panel1, 1, _p1, fusionInterpretation,
+                 text_color=htfTrendIntact ? color.lime : color.orange,
+                 text_size=_szA)
+            _p1 := _p1 + 1
+            table.cell(panel1, 0, _p1, "Fusion Conf",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(panel1, 1, _p1, str.tostring(math.round(fusionConfidence)) + "%",
+                 text_color=f_sc(fusionConfidence), text_size=_szA)
+            _p1 := _p1 + 1
+            table.cell(panel1, 0, _p1, "HTF Trend",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(panel1, 1, _p1, htfTrendIntact ? "Intact ✓" : "Weakening ⚠",
+                 text_color=htfTrendIntact ? color.lime : color.orange,
+                 text_size=_szA)
+            _p1 := _p1 + 1
+            table.cell(panel1, 0, _p1, "LTF Reversal",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(panel1, 1, _p1, ltfReversalForming ? "Forming ⚠" : "Not yet",
+                 text_color=ltfReversalForming ? color.orange : color.gray,
+                 text_size=_szA)
+            _p1 := _p1 + 1
+        if showDP3_WaveProgress
+            f_sep(panel1, _p1, "MULTI-LEVEL WAVE PROGRESS", _ts)
+            _p1 := _p1 + 1
+            table.cell(panel1, 0, _p1, "L2 (HTF) Progress",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(panel1, 1, _p1,
+                 l2_targetWave + "\n" + l2_currentPhase,
+                 text_color=color.yellow, text_size=_szA)
+            _p1 := _p1 + 1
+            table.cell(panel1, 0, _p1, "L1 (ITF) Progress",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(panel1, 1, _p1,
+                 l1_targetWave + "\n" + l1_currentPhase,
+                 text_color=color.aqua, text_size=_szA)
+            _p1 := _p1 + 1
+            table.cell(panel1, 0, _p1, "L3 (Micro) Progress",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(panel1, 1, _p1,
+                 l3_targetWave + "\n" + l3_currentPhase,
+                 text_color=color.new(#c084fc, 0), text_size=_szA)
+            _p1 := _p1 + 1
+            table.cell(panel1, 0, _p1, "L0 (Primary) Progress",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(panel1, 1, _p1,
+                 l0_targetWave + "\n" + l0_currentPhase,
+                 text_color=color.lime, text_size=_szA)
+            _p1 := _p1 + 1
+    0
+
+f_renderPanel1()
 
 bool p3_highConvictionSetup =
      fractalConfidence > 68 and
@@ -4994,358 +4131,6 @@ alertcondition(p3_highConvictionSetup,
      message="SYMPHONY v68 RWI: Fractal confluence detected.")
 
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// PHASE 1 — WAVE TRACEABILITY v3
-// DASHBOARD ↔ CHART LINKAGE — TRUE STRUCTURAL ANCHORING
-//
-// SPEC COMPLIANCE:
-//   Every label attaches to the ACTUAL structure producing the calculation.
-//   No future-space boxes. No synthetic structures. No new pivots.
-//
-// SOURCE MAPPING (audit result):
-//   L2 HTF  → expScr_tf2/decScr_tf2/abScr_tf2/liqScr_tf2 via request.security(tf2)
-//              Price range: l2_zoneHigh / l2_zoneLow  (highest/lowest 20 bars on tf2)
-//              Origin: left edge = bar_index - 20 equivalent; no fixed origin bar exists.
-//              Solution: box spans l2_zoneHigh/l2_zoneLow across the last 20 current-TF
-//              bars that contain the tf2 20-bar range window, anchored left at the
-//              bar where that range began.
-//
-//   L1 CHILD → expScr_tf1/decScr_tf1/abScr_tf1/liqScr_tf1 via request.security(tf1)
-//              Price range: l1_zoneHigh / l1_zoneLow  (highest/lowest 20 bars on tf1)
-//
-//   L0 PRIMARY → waveProgress / convexityMaturity / primaryHypothesis (current TF)
-//              Origin: point4OriginBar / point4OriginHigh / point4OriginLow (exact)
-//              Zone: point4OriginBar → bar_index (the actual wave span)
-//
-//   L3 GRANDCHILD → m1AbsorptionEmer/m1LiquidityEmer/m1ConvexityEmer/m1ExpansionWeak
-//              Price range: l3_zoneHigh / l3_zoneLow  (highest/lowest 20 bars on "1")
-//
-// HIERARCHY NESTING RULE (visual):
-//   L2 HTF  → outermost zone (widest price range — drawn behind all others)
-//   L0 Primary → spans from its origin bar to now (inside L2)
-//   L1 Child   → tf1 range (inside L0 conceptually)
-//   L3 Grandchild → narrowest / M1 range (innermost)
-//
-// ORIGIN LABELS:
-//   L0: label at point4OriginBar (exact existing variable)
-//   L2/L1/L3: label at bar_index (left/right edge of zone — no fake origin bars)
-//
-// DOMINANT WAVE: drawn ON the dominant structure's zone mid-price.
-// ═══════════════════════════════════════════════════════════════════════════════
-
-var string GRP_TRACE = "Wave Traceability (Phase 1)"
-showTraceZones  = input.bool(true,  "Show Wave Traceability Zones (on-chart)", group=GRP_TRACE)
-showL0Zone      = input.bool(true,  "Show L0 Primary Origin Zone",             group=GRP_TRACE)
-showDominantTag = input.bool(true,  "Show Dominant Wave Tag",                  group=GRP_TRACE)
-showOriginPins  = input.bool(true,  "Show Origin Anchor Pins",                 group=GRP_TRACE)
-
-// ── Colour scheme: mirrors P3 dashboard colour-coding exactly ────────────────
-//   narr_primary (L0)  = lime    ← matches "Primary Wave" rows
-//   narr_child   (L1)  = aqua    ← matches "Child Wave" rows
-//   narr_grandchild (L2) = yellow  ← matches "HTF Structure" rows
-//   narr_micro   (L3)  = purple  ← matches "M1 Sensor" rows
-color trace_L2_col = color.yellow             // L2 HTF
-color trace_L0_col = color.lime               // L0 Primary
-color trace_L1_col = color.aqua               // L1 Child
-color trace_L3_col = color.new(#c084fc, 0)    // L3 Grandchild (M1)
-
-// ── Persistent drawing objects ───────────────────────────────────────────────
-var box   l2ZoneBox     = na  // L2 HTF zone (outermost — tf2 price range)
-var box   l0ZoneBox     = na  // L0 Primary zone (origin → now)
-var box   l1ZoneBox     = na  // L1 Child zone (tf1 price range)
-var box   l3ZoneBox     = na  // L3 Grandchild zone (M1 price range)
-
-var label l2ZoneLbl     = na  // L2 label at zone top-left
-var label l0ZoneLbl     = na  // L0 label at origin bar
-var label l1ZoneLbl     = na  // L1 label at zone bottom-left
-var label l3ZoneLbl     = na  // L3 label at zone top-right
-var label l0OriginPin   = na  // L0 origin anchor pin
-var label dominantLabel = na  // Dominant wave tag on dominant structure
-
-// ── Helper: midpoint of a price range ───────────────────────────────────────
-f_mid(float h, float l) => (h + l) / 2.0
-
-// ════════════════════════════════════════════════════════════════════════════
-// ZONE SIZING — RIGHT-OF-PRICE BAND MARKERS
-//
-// L2/L1/L3 are HTF price ranges. Their VALUE is the price band (zoneHigh/zoneLow).
-// Their TIME span on the current-TF chart is NOT meaningful — multiplying TF
-// ratios by bar counts produces a span of hundreds of current-TF bars, which
-// overlaps L0 and every other structure.  That was the root cause of the
-// "L2 box looks like L0" problem seen in the screenshot.
-//
-// CORRECT APPROACH: draw each HTF zone as a narrow vertical BAND just to the
-// right of the last bar, at the correct PRICE LEVEL (zoneHigh/zoneLow).
-// Stacked by hierarchy width:
-//   L2 HTF        → outermost  (bar_index+3 to bar_index+18)
-//   L1 CHILD      → middle     (bar_index+3 to bar_index+12)
-//   L3 GRANDCHILD → innermost  (bar_index+3 to bar_index+7)
-//
-// L0 PRIMARY continues to span from point4OriginBar → bar_index (unchanged).
-// ════════════════════════════════════════════════════════════════════════════
-
-int _l2R_far  = bar_index + 18   // L2 HTF  — rightmost, widest
-int _l2R_near = bar_index + 3
-int _l1R_far  = bar_index + 12   // L1 Child — middle
-int _l1R_near = bar_index + 3
-int _l3R_far  = bar_index + 7    // L3 Grandchild — narrowest
-int _l3R_near = bar_index + 3
-
-// ════════════════════════════════════════════════════════════════════════════
-// PHASE 1-A  L2 HTF TRACEABILITY
-// Structure: the 60-minute (tf2) wave being measured.
-// Zone: the actual price range on tf2 that produced expScr_tf2/decScr_tf2 etc.
-//       = l2_zoneHigh / l2_zoneLow, spanning the equivalent number of current
-//         bars that represent 20 × tf2 bars.
-// Label text mirrors the dashboard "L2 (HTF) Progress" row exactly.
-// Origin pin: at the left edge of the zone (oldest bar in the 20-bar tf2 window)
-// ════════════════════════════════════════════════════════════════════════════
-// ── PHASE 1-A  L2 HTF TRACEABILITY ──────────────────────────────────────────
-// Drawn as a narrow vertical band right of current bar at the REAL tf2 price level.
-// Label text mirrors the dashboard "L2 (HTF) Progress" row exactly.
-if showTraceZones and barstate.islast and not na(l2_zoneHigh) and not na(l2_zoneLow)
-
-    string _l2txt = "L2 HTF ORIGIN (" + tf2 + "m)\n" +
-         "What Wave Price Is Trying To Make:\n" + l2_targetWave + "\n" +
-         "Current Phase Within Curve Cycle:\n" + l2_currentPhase +
-         "\nDom: " + str.tostring(math.round(l2_dominance)) + "%"
-
-    if na(l2ZoneBox)
-        l2ZoneBox := box.new(_l2R_near, l2_zoneHigh, _l2R_far, l2_zoneLow,
-             border_color=trace_L2_col, border_width=2,
-             bgcolor=color.new(trace_L2_col, 92),
-             border_style=line.style_solid)
-        l2ZoneLbl := label.new(_l2R_near, l2_zoneHigh, _l2txt,
-             style=label.style_label_right,
-             color=color.new(#10103a, 10),
-             textcolor=trace_L2_col, size=size.small, textalign=text.align_left)
-    else
-        box.set_lefttop    (l2ZoneBox, _l2R_near, l2_zoneHigh)
-        box.set_rightbottom(l2ZoneBox, _l2R_far,  l2_zoneLow)
-        label.set_xy  (l2ZoneLbl, _l2R_near, l2_zoneHigh)
-        label.set_text(l2ZoneLbl, _l2txt)
-
-// ════════════════════════════════════════════════════════════════════════════
-// PHASE 1-B  L0 PRIMARY TRACEABILITY
-// Structure: the actual primary wave span from point4OriginBar to current bar.
-// These are the EXACT variables driving waveProgress, convexityMaturity,
-// originToExtreme, distToOrigin, and the entire hypothesis engine.
-// Zone: point4OriginBar → bar_index (the real wave extent on chart)
-// Label: placed at the origin bar (the actual spawn point)
-// ════════════════════════════════════════════════════════════════════════════
-if showL0Zone and not na(point4OriginBar) and not na(point4OriginHigh) and not na(point4OriginLow)
-
-    // _l0phase = waveProgressCanonical (used for label text below)
-    string _l0txt = "L0 PRIMARY ORIGIN\n" +
-         "What Wave Price Is Trying To Make:\n" + l0_targetWave + "\n" +
-         "Current Phase Within Curve Cycle:\n" + l0_currentPhase +
-         "\nDom: " + str.tostring(math.round(nz(l0_dominance, 0.0))) + "%"
-
-    // Zone box: origin → now (the actual L0 wave span)
-    if na(l0ZoneBox)
-        l0ZoneBox := box.new(point4OriginBar, point4OriginHigh, bar_index, point4OriginLow,
-             border_color=trace_L0_col, border_width=2,
-             bgcolor=color.new(trace_L0_col, 94))
-    else
-        box.set_lefttop    (l0ZoneBox, point4OriginBar, point4OriginHigh)
-        box.set_rightbottom(l0ZoneBox, bar_index,       point4OriginLow)
-
-    // Label at the origin bar (top edge) — exactly where the wave was born
-    if na(l0ZoneLbl)
-        l0ZoneLbl := label.new(point4OriginBar, point4OriginHigh, _l0txt,
-             style=label.style_label_right,
-             color=color.new(#10103a, 10),
-             textcolor=trace_L0_col, size=size.small, textalign=text.align_left)
-    else
-        label.set_xy  (l0ZoneLbl, point4OriginBar, point4OriginHigh)
-        label.set_text(l0ZoneLbl, _l0txt)
-
-    // Origin anchor pin — small triangle at the exact spawn pivot
-    if showOriginPins and ecvShow_Origin
-        if na(l0OriginPin)
-            l0OriginPin := label.new(point4OriginBar,
-                 direction == 1 ? point4OriginLow : point4OriginHigh,
-                 "L0 PRIMARY\nORIGIN",
-                 style=direction == 1 ? label.style_label_up : label.style_label_down,
-                 color=color.new(trace_L0_col, 15),
-                 textcolor=color.black, size=size.tiny)
-        else
-            label.set_xy(l0OriginPin, point4OriginBar,
-                 direction == 1 ? point4OriginLow : point4OriginHigh)
-
-    // Section 9 — "Wave Completion" marker. Fires when ENGINE 1A canonical phase
-    // reaches the Demand Return or Supply Return state — the final lifecycle phase.
-    // IE1A is the sole authority; score-based thresholds are not used here.
-    var label l0CompletionLbl = na
-    bool _waveComplete = ie1a_currentPhase == "Demand Return" or ie1a_currentPhase == "Supply Return"
-    if showOriginPins and ecvShow_WaveCompletion and _waveComplete
-        string _compTxt = "WAVE COMPLETION\n" + waveProgressDirLabel
-        if na(l0CompletionLbl)
-            l0CompletionLbl := label.new(bar_index,
-                 direction == 1 ? high + atr * 0.6 : low - atr * 0.6,
-                 _compTxt,
-                 style=direction == 1 ? label.style_label_down : label.style_label_up,
-                 color=color.new(trace_L0_col, 20),
-                 textcolor=color.black, size=size.small)
-        else
-            label.set_xy  (l0CompletionLbl, bar_index, direction == 1 ? high + atr * 0.6 : low - atr * 0.6)
-            label.set_text(l0CompletionLbl, _compTxt)
-    else if not na(l0CompletionLbl)
-        label.delete(l0CompletionLbl)
-        l0CompletionLbl := na
-
-
-// ════════════════════════════════════════════════════════════════════════════
-// PHASE 1-C  L1 CHILD TRACEABILITY
-// Structure: the 15-minute (tf1) child wave structure.
-// The calculations l1_waveProgress / l1_dominantPhase / l1_convexityMaturity
-// are produced by expScr_tf1/decScr_tf1/abScr_tf1/liqScr_tf1, which come
-// from request.security(tf1, f_htfBeliefs(...)).
-// Zone: l1_zoneHigh / l1_zoneLow (the EXACT tf1 price range already fetched),
-//       spanning the equivalent current-TF bars for that tf1 window.
-// Label text mirrors "L1 (ITF) Progress" dashboard row exactly.
-// ════════════════════════════════════════════════════════════════════════════
-// ── PHASE 1-C  L1 CHILD TRACEABILITY ────────────────────────────────────────
-// Drawn as a narrow band right of current bar at the real tf1 price level.
-// Narrower than L2, wider than L3 — hierarchy is readable at a glance.
-if showTraceZones and barstate.islast and not na(l1_zoneHigh) and not na(l1_zoneLow)
-
-    string _l1txt = "L1 CHILD ORIGIN (" + tf1 + "m)\n" +
-         "What Wave Price Is Trying To Make:\n" + l1_targetWave + "\n" +
-         "Current Phase Within Curve Cycle:\n" + l1_currentPhase +
-         "\nDom: " + str.tostring(math.round(l1_dominance)) + "%"
-
-    if na(l1ZoneBox)
-        l1ZoneBox := box.new(_l1R_near, l1_zoneHigh, _l1R_far, l1_zoneLow,
-             border_color=trace_L1_col, border_width=1,
-             bgcolor=color.new(trace_L1_col, 92),
-             border_style=line.style_dashed)
-        l1ZoneLbl := label.new(_l1R_near, l1_zoneLow, _l1txt,
-             style=label.style_label_right,
-             color=color.new(#10103a, 10),
-             textcolor=trace_L1_col, size=size.small, textalign=text.align_left)
-    else
-        box.set_lefttop    (l1ZoneBox, _l1R_near, l1_zoneHigh)
-        box.set_rightbottom(l1ZoneBox, _l1R_far,  l1_zoneLow)
-        label.set_xy  (l1ZoneLbl, _l1R_near, l1_zoneLow)
-        label.set_text(l1ZoneLbl, _l1txt)
-
-// ════════════════════════════════════════════════════════════════════════════
-// PHASE 1-D  L3 GRANDCHILD (M1 PHYSICS SENSOR) TRACEABILITY
-// Structure: the 1-minute grandchild structure acting as the M1 physics sensor.
-// The calculations l3_waveProgress / l3_dominantPhase are produced by
-// m1AbsorptionEmer / m1LiquidityEmer / m1ConvexityEmer / m1ExpansionWeak —
-// all fetched via request.security(syminfo.tickerid, "1", f_m1Physics(...)).
-// Zone: l3_zoneHigh / l3_zoneLow (EXACT M1 price range already fetched),
-//       spanning the equivalent current-TF bars.
-// DO NOT redesign or redefine L3 — this is display-only traceability.
-// Label text mirrors "L3 (Micro) Progress" dashboard row exactly.
-// ════════════════════════════════════════════════════════════════════════════
-// ── PHASE 1-D  L3 GRANDCHILD (M1 PHYSICS SENSOR) TRACEABILITY ───────────────
-// DO NOT redesign L3 — display only. Narrow band nearest to price action.
-if showTraceZones and barstate.islast and not na(l3_zoneHigh) and not na(l3_zoneLow)
-
-    string _l3txt = "L3 MICRO ORIGIN\n" +
-         "What Wave Price Is Trying To Make:\n" + l3_targetWave + "\n" +
-         "Current Phase Within Curve Cycle:\n" + l3_currentPhase +
-         "\nDom: " + str.tostring(math.round(l3_dominance)) + "%"
-
-    if na(l3ZoneBox)
-        l3ZoneBox := box.new(_l3R_near, l3_zoneHigh, _l3R_far, l3_zoneLow,
-             border_color=color.new(trace_L3_col, 20), border_width=1,
-             bgcolor=color.new(trace_L3_col, 92),
-             border_style=line.style_dashed)
-        l3ZoneLbl := label.new(_l3R_far, f_mid(l3_zoneHigh, l3_zoneLow), _l3txt,
-             style=label.style_label_left,
-             color=color.new(#10103a, 20),
-             textcolor=color.new(trace_L3_col, 10), size=size.tiny, textalign=text.align_left)
-    else
-        box.set_lefttop    (l3ZoneBox, _l3R_near, l3_zoneHigh)
-        box.set_rightbottom(l3ZoneBox, _l3R_far,  l3_zoneLow)
-        label.set_xy  (l3ZoneLbl, _l3R_far, f_mid(l3_zoneHigh, l3_zoneLow))
-        label.set_text(l3ZoneLbl, _l3txt)
-
-// ════════════════════════════════════════════════════════════════════════════
-// PHASE 1-F  AUTOMATIC LABEL STACKING (Section 5 — Visual Clarity Engine)
-// Prevents the L2 / L0 / L1 / L3 origin labels from visually overlapping.
-// Hierarchy order is enforced top-down: L2 -> L0 -> L1 -> L3. Each label's
-// anchor price is read back, and if it sits within a minimum ATR-based
-// vertical gap of the label above it in the hierarchy, it is nudged down
-// by the remaining distance. No new calculations of wave state are made —
-// this only adjusts label.set_xy placement of the four existing labels.
-// ════════════════════════════════════════════════════════════════════════════
-if showTraceZones and barstate.islast and not na(atr)
-
-    float _stackGap = atr * 1.0   // minimum vertical separation between labels
-
-    // Read current anchor prices (y) for each label, in hierarchy order.
-    float _y2 = not na(l2ZoneLbl) ? label.get_y(l2ZoneLbl) : na
-    float _y0 = not na(l0ZoneLbl) ? label.get_y(l0ZoneLbl) : na
-    float _y1 = not na(l1ZoneLbl) ? label.get_y(l1ZoneLbl) : na
-    float _y3 = not na(l3ZoneLbl) ? label.get_y(l3ZoneLbl) : na
-
-    // L0 vs L2
-    if not na(_y2) and not na(_y0) and math.abs(_y2 - _y0) < _stackGap
-        _y0 := _y0 < _y2 ? _y2 - _stackGap : _y2 + _stackGap
-        label.set_xy(l0ZoneLbl, label.get_x(l0ZoneLbl), _y0)
-
-    // L1 vs L0
-    if not na(_y0) and not na(_y1) and math.abs(_y0 - _y1) < _stackGap
-        _y1 := _y1 < _y0 ? _y0 - _stackGap : _y0 + _stackGap
-        label.set_xy(l1ZoneLbl, label.get_x(l1ZoneLbl), _y1)
-
-    // L3 vs L1
-    if not na(_y1) and not na(_y3) and math.abs(_y1 - _y3) < _stackGap
-        _y3 := _y3 < _y1 ? _y1 - _stackGap : _y1 + _stackGap
-        label.set_xy(l3ZoneLbl, label.get_x(l3ZoneLbl), _y3)
-
-    // L3 vs L2 (in case L1 nudge pushed L3 back into L2's space)
-    if not na(_y2) and not na(_y3) and math.abs(_y2 - _y3) < _stackGap
-        _y3 := _y3 < _y2 ? _y2 - _stackGap : _y2 + _stackGap
-        label.set_xy(l3ZoneLbl, label.get_x(l3ZoneLbl), _y3)
-
-// ════════════════════════════════════════════════════════════════════════════
-// PHASE 1-E  DOMINANT WAVE VISIBILITY
-// Drawn ON the dominant structure's zone — not in a detached location.
-// Uses existing dominantWaveLevel (from l0/l1/l2/l3 dominance engine).
-// No new dominance calculations.
-// ════════════════════════════════════════════════════════════════════════════
-if showDominantTag and barstate.islast
-
-    // Determine which structure's midpoint to anchor the tag to
-    color _domCol  =
-         dominantWaveLevel == "L2 HTF"    ? trace_L2_col :
-         dominantWaveLevel == "L1 CHILD"    ? trace_L1_col :
-         dominantWaveLevel == "L0 PRIMARY" ? trace_L0_col : trace_L3_col
-
-    // Anchor price: mid of the dominant structure's zone
-    float _domMid =
-         dominantWaveLevel == "L2 HTF"     and not na(l2_zoneHigh) and not na(l2_zoneLow) ?
-              f_mid(l2_zoneHigh, l2_zoneLow) :
-         dominantWaveLevel == "L1 CHILD"     and not na(l1_zoneHigh) and not na(l1_zoneLow) ?
-              f_mid(l1_zoneHigh, l1_zoneLow) :
-         dominantWaveLevel == "L0 PRIMARY" and not na(point4OriginHigh) and not na(point4OriginLow) ?
-              f_mid(point4OriginHigh, point4OriginLow) :
-         not na(l3_zoneHigh) and not na(l3_zoneLow) ?
-              f_mid(l3_zoneHigh, l3_zoneLow) : close
-
-    // Anchor bar: right edge of the dominant structure
-    int _domBar = bar_index
-
-    string _domTxt = "DOMINANT WAVE\n" + dominantWaveLevel
-
-    if na(dominantLabel)
-        dominantLabel := label.new(_domBar, _domMid, _domTxt,
-             style=label.style_label_left,
-             color=color.new(#10103a, 5),
-             textcolor=_domCol, size=size.normal, textalign=text.align_left)
-    else
-        label.set_xy       (dominantLabel, _domBar, _domMid)
-        label.set_text     (dominantLabel, _domTxt)
-        label.set_textcolor(dominantLabel, _domCol)
-
-
-// ════════════════════════════════════════════════════════════════════════════
 // SECTION 17 — FUTURE RETURN ZONE ENGINE (FRZ)  [Phase 2]
 // Identifies price areas of highest interaction probability BEFORE the return.
 // Uses ONLY existing detection variables — no new physics calculations.
@@ -6262,7 +5047,7 @@ f_v72_run() =>
 
     // SECTION 22 - V72 COMMAND DASHBOARD (Standard + Advanced rows gated)
     if showTable and showV72_Command and barstate.islast
-        var table cmd = table.new(position.middle_right, 2, 40,
+        var table cmd = table.new(position.middle_right, 2, 80,
              bgcolor      = color.new(#06121f, 5),
              border_color = color.new(#00ffcc, 30),
              border_width = 1,
@@ -6347,59 +5132,112 @@ f_v72_run() =>
         table.cell(cmd, 1, _r, frz_attractorConvergence ? "YES" : "no", text_color=frz_attractorConvergence ? #00ffcc : color.gray, text_size=size.tiny)
         _r := _r + 1
 
-        if dashAdvancedMode
-            table.cell(cmd, 0, _r, "RIE State", text_color=#ffb86c, text_size=size.tiny)
-            table.cell(cmd, 1, _r, rot_state + " (" + f_v72_pct(rot_transferProbability) + ")", text_color=color.orange, text_size=size.tiny)
+        // Panel 2 decision metrics
+        if showDC_Quality
+            f_sep(cmd, _r, "SETUP QUALITY", _ts)
             _r := _r + 1
-
-            table.cell(cmd, 0, _r, "MCE HTF Align", text_color=#ffb86c, text_size=size.tiny)
-            table.cell(cmd, 1, _r, f_v72_pct(mce_htfAlignmentScore) + " | " + mce_htfAlignmentSummary, text_color=color.white, text_size=size.tiny)
+            table.cell(cmd, 0, _r, "Bayesian prob",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(cmd, 1, _r, str.tostring(math.round(finalProb)) + "%",
+                 text_color=finalProb > 70 ? color.lime : finalProb > 50 ? color.yellow : color.red,
+                 text_size=_szA)
             _r := _r + 1
-
-            table.cell(cmd, 0, _r, "MCE Exec", text_color=#ffb86c, text_size=size.tiny)
-            table.cell(cmd, 1, _r, mce_execAlignmentSummary, text_color=color.white, text_size=size.tiny)
+            table.cell(cmd, 0, _r, "Trade readiness",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(cmd, 1, _r, str.tostring(math.round(tradeReadiness)) + "%",
+                 text_color=f_sc(tradeReadiness), text_size=_szA)
             _r := _r + 1
-
-            table.cell(cmd, 0, _r, "Wave Chain", text_color=#ffb86c, text_size=size.tiny)
-            table.cell(cmd, 1, _r, trc_waveChain, text_color=color.silver, text_size=size.tiny)
+            table.cell(cmd, 0, _r, "Signal quality",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(cmd, 1, _r, grade,
+                 text_color=gradeCol, text_size=_szA)
             _r := _r + 1
-
-            table.cell(cmd, 0, _r, "Conf Breakdown", text_color=#ffb86c, text_size=size.tiny)
-            table.cell(cmd, 1, _r, trc_confidenceBreakdown, text_color=color.silver, text_size=size.tiny)
+            table.cell(cmd, 0, _r, "Edge filter",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(cmd, 1, _r, edgePassesFilter ? "✓ Pass" : "Filtered",
+                 text_color=edgePassesFilter ? color.lime : color.red,
+                 text_size=_szA)
             _r := _r + 1
-
-            table.cell(cmd, 0, _r, "Decision Source", text_color=#ffb86c, text_size=size.tiny)
-            table.cell(cmd, 1, _r, trc_decisionSource, text_color=color.silver, text_size=size.tiny)
+        if showDC_DirProb
+            f_sep(cmd, _r, "DIRECTION PROBABILITY", _ts)
             _r := _r + 1
-
-            table.cell(cmd, 0, _r, "Expected Path", text_color=#ffb86c, text_size=size.tiny)
-            table.cell(cmd, 1, _r, te_expectedPath + "  (TP1q " + f_v72_pct(te_tp1_quality) + " / TP2q " + f_v72_pct(te_tp2_quality) + ")", text_color=color.white, text_size=size.tiny)
+            table.cell(cmd, 0, _r, "Expansion",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(cmd, 1, _r, str.tostring(math.round(expansionProbability)) + " pts",
+                 text_color=f_sc(expansionProbability), text_size=_szA)
             _r := _r + 1
-
-            table.cell(cmd, 0, _r, "TP3 (ext)", text_color=#ffb86c, text_size=size.tiny)
-            table.cell(cmd, 1, _r, f_v72_px(te_tp3) + "  q " + f_v72_pct(te_tp3_quality) + " sc " + f_v72_num(eae_tertiaryAttractorScore) + (na(te_rr_tp3) ? "" : " R:R " + f_v72_num(te_rr_tp3)), text_color=color.green, text_size=size.tiny)
+            table.cell(cmd, 0, _r, "Reversal",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(cmd, 1, _r, str.tostring(math.round(reversalProbability)) + " pts",
+                 text_color=f_sc(reversalProbability), text_size=_szA)
             _r := _r + 1
-
-            table.cell(cmd, 0, _r, "FRZ Energy", text_color=#ffb86c, text_size=size.tiny)
-            table.cell(cmd, 1, _r, "res " + f_v72_num(frz_residualEnergy) + " / wt " + f_v72_num(frz_attractorWeight) + " / conf " + f_v72_num(frz_confidence) + " / resol " + f_v72_num(frz_resolutionScore), text_color=color.silver, text_size=size.tiny)
+        if showDC_LiveOpp
+            f_sep(cmd, _r, "LIVE OPPORTUNITY", _ts)
             _r := _r + 1
-
-            table.cell(cmd, 0, _r, "Narrative Meta", text_color=#ffb86c, text_size=size.tiny)
-            table.cell(cmd, 1, _r, "age " + str.tostring(ne_narrativeAge) + (ne_narrativeConflict ? "  conflict" : "  ok") + "  | lifecycle " + str.tostring(mce_l0_lifecycle), text_color=ne_narrativeConflict ? color.orange : color.silver, text_size=size.tiny)
+            table.cell(cmd, 0, _r, "Buy score",
+                 text_color=color.white, text_size=_szA)
+            table.cell(cmd, 1, _r, str.tostring(buyProb, "#.#") + "%",
+                 text_color=color.lime, text_size=_szA)
             _r := _r + 1
-
-            table.cell(cmd, 0, _r, "Origin Stops", text_color=#ffb86c, text_size=size.tiny)
-            table.cell(cmd, 1, _r, "bull " + f_v72_px(inv_bullOriginPrice) + " / bear " + f_v72_px(inv_bearOriginPrice) + "  | risk " + (na(inv_riskInPts) ? "-" : f_v72_num(inv_riskInPts)), text_color=color.silver, text_size=size.tiny)
+            table.cell(cmd, 0, _r, "Sell score",
+                 text_color=color.white, text_size=_szA)
+            table.cell(cmd, 1, _r, str.tostring(sellProb, "#.#") + "%",
+                 text_color=color.red, text_size=_szA)
             _r := _r + 1
-
-            table.cell(cmd, 0, _r, "MCE Integrity", text_color=#ffb86c, text_size=size.tiny)
-            table.cell(cmd, 1, _r, "T1 " + f_v72_num(mce_tf1_integrity) + " / T2 " + f_v72_num(mce_tf2_integrity), text_color=color.silver, text_size=size.tiny)
+            table.cell(cmd, 0, _r, "Live edge",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(cmd, 1, _r, liveDirective,
+                 text_color=netEdgeAdjusted > 0 ? color.lime : color.red,
+                 text_size=_szA)
             _r := _r + 1
-
-            table.cell(cmd, 0, _r, "MCE TF Dir", text_color=#ffb86c, text_size=size.tiny)
-            table.cell(cmd, 1, _r, "chart " + str.tostring(direction) + " / T1 " + str.tostring(mce_dir1) + " / T2 " + str.tostring(mce_dir2), text_color=color.silver, text_size=size.tiny)
+            table.cell(cmd, 0, _r, "Net edge",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(cmd, 1, _r,
+                 str.tostring(netEdgeAdjusted, "#.#") + "  " +
+                 (math.abs(netEdgeAdjusted) > 25 ? "Strong" : math.abs(netEdgeAdjusted) > 10 ? "Moderate" : "Weak"),
+                 text_color=netEdgeAdjusted > 0 ? color.lime : color.red,
+                 text_size=_szA)
             _r := _r + 1
-
+        if showDP3_ExecProb
+            f_sep(cmd, _r, "EXECUTION PROBABILITY V2", _ts)
+            _r := _r + 1
+            table.cell(cmd, 0, _r, "Exec Directive",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(cmd, 1, _r, execDirective,
+                 text_color=execProb_StandDown >= 60 ? color.red : color.white,
+                 text_size=_szA)
+            _r := _r + 1
+            table.cell(cmd, 0, _r, "Continuation",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(cmd, 1, _r, str.tostring(math.round(execProb_Continuation)) + "%",
+                 text_color=f_sc(execProb_Continuation), text_size=_szA)
+            _r := _r + 1
+            table.cell(cmd, 0, _r, "Reversal",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(cmd, 1, _r, str.tostring(math.round(execProb_Reversal)) + "%",
+                 text_color=f_sc(execProb_Reversal), text_size=_szA)
+            _r := _r + 1
+            table.cell(cmd, 0, _r, "Expansion",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(cmd, 1, _r, str.tostring(math.round(execProb_Expansion)) + "%",
+                 text_color=f_sc(execProb_Expansion), text_size=_szA)
+            _r := _r + 1
+            table.cell(cmd, 0, _r, "New High / New Low",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(cmd, 1, _r, str.tostring(math.round(execProb_Creation)) + "%",
+                 text_color=f_sc(execProb_Creation), text_size=_szA)
+            _r := _r + 1
+            table.cell(cmd, 0, _r, "Absorption",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(cmd, 1, _r, str.tostring(math.round(execProb_Absorption)) + "%",
+                 text_color=f_sc(execProb_Absorption), text_size=_szA)
+            _r := _r + 1
+            table.cell(cmd, 0, _r, "Stand Down",
+                 text_color=color.silver, text_size=_szA)
+            table.cell(cmd, 1, _r, str.tostring(math.round(execProb_StandDown)) + "%",
+                 text_color=execProb_StandDown >= 60 ? color.red : f_sc(100 - execProb_StandDown),
+                 text_size=_szA)
+            _r := _r + 1
     0
 
 // Execute the V72 engine + dashboard once per bar (hidden plot guarantees the
