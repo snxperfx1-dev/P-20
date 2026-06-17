@@ -210,70 +210,62 @@ frz_maxBarsActive  = input.int   (100,   "FRZ Max Active Bars",                g
 showERF_Dashboard  = input.bool  (true,  "Show ERF Panel in Dashboard",        group=GRP_ERF)
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// V72 — DECISION SYSTEM INPUTS
-// All weights/thresholds for the new engines are exposed here per the V72
-// Implementation Readiness Report (every numeric constant is a tunable input;
-// no engine hardcodes calibration values).
+// V72 — DECISION SYSTEM PARAMETERS
+// NOTE (CE10116): Pine counts every input.*() and request.*() return as an
+// "external element", and the pool is shared by every function. To stay under
+// the 254-element limit, only a few high-value tunables remain as inputs; all
+// engine weights/thresholds are plain global constants (constants are free).
+// Adjust the constants below in source to recalibrate.
 // ═══════════════════════════════════════════════════════════════════════════════
 var string GRP_V72_DASH = "V72 — Decision Dashboard"
-var string GRP_V72_INV  = "V72 — Invalidation Engine (IE2)"
 var string GRP_V72_TE   = "V72 — Target Engine (TE)"
 var string GRP_V72_ERF  = "V72 — ERF Integration"
-var string GRP_V72_RIE  = "V72 — Rotation Intelligence (RIE)"
 var string GRP_V72_MCE  = "V72 — Multi-Timeframe Consensus (MCE)"
-var string GRP_V72_TQE  = "V72 — Trade Qualification (TQE)"
-var string GRP_V72_DOE  = "V72 — Decision Output (DOE)"
 
-// Dashboard mode
+// ── Inputs kept (high-value tunables) ──
 dashAdvancedMode   = input.bool  (false, "Advanced Mode (Diagnostic Depth)",   group=GRP_V72_DASH)
 showV72_Command    = input.bool  (true,  "Show V72 COMMAND Panel",             group=GRP_V72_DASH)
-
-// Invalidation Engine (IE2) — ATR buffers (C9: use flipBot/flipTop)
-invOriginBuffer    = input.float (0.25,  "Origin Stop Buffer (ATR)",           group=GRP_V72_INV, minval=0.0, step=0.05)
-invZoneBuffer      = input.float (0.10,  "Zone Stop Buffer (ATR)",             group=GRP_V72_INV, minval=0.0, step=0.05)
-
-// Target Engine (TE)
 rrMinimum          = input.float (1.5,   "Minimum R:R to TP1 (gate)",          group=GRP_V72_TE, minval=0.5, step=0.1)
-
-// ERF Integration
 erfEntryThreshold  = input.float (45.0,  "ERF Trade Readiness Entry Gate",     group=GRP_V72_ERF, minval=0.0, maxval=100.0, step=5.0)
-erfWeightResComplete = input.float(0.25, "ERF Readiness: RecursiveComplete wt",group=GRP_V72_ERF, minval=0.0, maxval=1.0, step=0.05)
-erfWeightResidual  = input.float (0.20,  "ERF Readiness: (100-Residual) wt",   group=GRP_V72_ERF, minval=0.0, maxval=1.0, step=0.05)
-erfWeightConf      = input.float (0.15,  "ERF Readiness: erf_confidence wt",   group=GRP_V72_ERF, minval=0.0, maxval=1.0, step=0.05)
-frzProximityATR    = input.float (2.0,   "FRZ Proximity Threshold (ATR)",      group=GRP_V72_ERF, minval=0.1, step=0.1)
-frzConvergenceATR  = input.float (0.5,   "FRZ↔Attractor Convergence (ATR)",    group=GRP_V72_ERF, minval=0.1, step=0.1)
-
-// Rotation Intelligence Engine (RIE) — weights (C16: emergingStrength deferred)
-rieWtDecay         = input.float (0.35,  "RIE Pressure: Decay wt",             group=GRP_V72_RIE, minval=0.0, maxval=1.0, step=0.05)
-rieWtAbsorption    = input.float (0.30,  "RIE Pressure: Absorption wt",        group=GRP_V72_RIE, minval=0.0, maxval=1.0, step=0.05)
-rieWtConvexity     = input.float (0.20,  "RIE Pressure: Convexity wt",         group=GRP_V72_RIE, minval=0.0, maxval=1.0, step=0.05)
-rieWtExpansion     = input.float (0.40,  "RIE Stability: Expansion wt",        group=GRP_V72_RIE, minval=0.0, maxval=1.0, step=0.05)
-rieTransferPress   = input.float (0.50,  "RIE Transfer: Pressure wt",          group=GRP_V72_RIE, minval=0.0, maxval=1.0, step=0.05)
-rieTransferStab    = input.float (0.30,  "RIE Transfer: (100-Stability) wt",   group=GRP_V72_RIE, minval=0.0, maxval=1.0, step=0.05)
-rieContestedTh     = input.int   (50,    "RIE Contested Threshold",            group=GRP_V72_RIE, minval=0, maxval=100)
-rieImminentTh      = input.int   (75,    "RIE Transfer-Imminent Threshold",    group=GRP_V72_RIE, minval=0, maxval=100)
-
-// Multi-Timeframe Consensus (MCE) — 4-level (C15: 4 TFs, equal weight default)
 tf3                = input.timeframe("240", "MCE Timeframe 3 (H4)",            group=GRP_V72_MCE)
 tf4                = input.timeframe("D",    "MCE Timeframe 4 (Daily)",        group=GRP_V72_MCE)
 mceWeightMode      = input.string("Equal Weight", "MCE Weighting Mode",        group=GRP_V72_MCE, options=["Equal Weight", "HTF-Biased"])
-mceAlignBull       = input.int   (60,    "MCE HTF Alignment 'Intact' Threshold",group=GRP_V72_MCE, minval=0, maxval=100)
 
-// Trade Qualification Engine (TQE) — weights (C4: IE1A reduced to avoid double-count; C6: grade=display only)
-tqeWtIE1A          = input.float (0.15,  "TQE: IE1A Confidence wt",            group=GRP_V72_TQE, minval=0.0, maxval=1.0, step=0.05)
-tqeWtERF           = input.float (0.15,  "TQE: ERF Confidence wt",             group=GRP_V72_TQE, minval=0.0, maxval=1.0, step=0.05)
-tqeWtFRZ           = input.float (0.15,  "TQE: FRZ Quality wt",                group=GRP_V72_TQE, minval=0.0, maxval=1.0, step=0.05)
-tqeWtMCE           = input.float (0.25,  "TQE: MCE Alignment wt",              group=GRP_V72_TQE, minval=0.0, maxval=1.0, step=0.05)
-tqeWtRE            = input.float (0.15,  "TQE: RE Completion wt",              group=GRP_V72_TQE, minval=0.0, maxval=1.0, step=0.05)
-tqeWtLIQ           = input.float (0.15,  "TQE: Liquidity Quality wt",          group=GRP_V72_TQE, minval=0.0, maxval=1.0, step=0.05)
-tqeGradeAplus      = input.int   (80,    "TQE Grade A+ Threshold",             group=GRP_V72_TQE, minval=0, maxval=100)
-tqeGradeA          = input.int   (65,    "TQE Grade A Threshold",              group=GRP_V72_TQE, minval=0, maxval=100)
-tqeGradeB          = input.int   (50,    "TQE Grade B Threshold",              group=GRP_V72_TQE, minval=0, maxval=100)
-tqeGradeC          = input.int   (35,    "TQE Grade C Threshold",              group=GRP_V72_TQE, minval=0, maxval=100)
-
+// ── Engine constants (recalibrate here; not inputs to respect CE10116) ──
+// Invalidation Engine (IE2)
+float invOriginBuffer    = 0.25
+float invZoneBuffer      = 0.10
+// ERF Integration
+float erfWeightResComplete = 0.25
+float erfWeightResidual    = 0.20
+float erfWeightConf        = 0.15
+float frzProximityATR      = 2.0
+float frzConvergenceATR    = 0.5
+// Rotation Intelligence Engine (RIE)
+float rieWtDecay         = 0.35
+float rieWtAbsorption    = 0.30
+float rieWtConvexity     = 0.20
+float rieWtExpansion     = 0.40
+float rieTransferPress   = 0.50
+float rieTransferStab    = 0.30
+int   rieContestedTh     = 50
+int   rieImminentTh      = 75
+// Multi-Timeframe Consensus (MCE)
+int   mceAlignBull       = 60
+// Trade Qualification Engine (TQE)
+float tqeWtIE1A          = 0.15
+float tqeWtERF           = 0.15
+float tqeWtFRZ           = 0.15
+float tqeWtMCE           = 0.25
+float tqeWtRE            = 0.15
+float tqeWtLIQ           = 0.15
+int   tqeGradeAplus      = 80
+int   tqeGradeA          = 65
+int   tqeGradeB          = 50
+int   tqeGradeC          = 35
 // Decision Output Engine (DOE)
-doeConfCap         = input.int   (88,    "DOE Confidence Cap (base)",          group=GRP_V72_DOE, minval=50, maxval=100)
-doeConfCapConv     = input.int   (95,    "DOE Confidence Cap (convergence)",   group=GRP_V72_DOE, minval=50, maxval=100)
+int   doeConfCap         = 88
+int   doeConfCapConv     = 95
 
 
 showOriginShort    = originMode == "Short" or originMode == "Both"
