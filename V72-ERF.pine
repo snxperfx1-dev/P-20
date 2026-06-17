@@ -3375,24 +3375,13 @@ string _ts = dashTextSize
 string _szA = _ts == "tiny" ? size.tiny : size.small
 
 // ─────────────────────────────────────────────────────────────────────────────
-// DASHBOARD PANELS A/B/C/FU — wrapped in function to satisfy body-length limit
+// DASHBOARD PANELS A/B/C/FU — split into per-panel functions to satisfy BOTH the
+// body-length limit AND the per-function external-element limit (CE10116).
 // ─────────────────────────────────────────────────────────────────────────────
-f_renderDashABC() =>
+f_renderDashA() =>
     if showTable
         // ── PANEL A: Command Center (top_right) ──────────────────────────────────
         var table dashA = table.new(position.top_right, 2, 26,
-             bgcolor=color.new(#0a0a12, 5),
-             border_color=color.new(color.white, 30), border_width=1,
-             frame_color=color.new(color.white, 20), frame_width=1)
-
-        // ── PANEL B: Belief Distributions (bottom_right) ─────────────────────────
-        var table dashB = table.new(position.bottom_right, 2, 30,
-             bgcolor=color.new(#0a0a12, 5),
-             border_color=color.new(color.white, 30), border_width=1,
-             frame_color=color.new(color.white, 20), frame_width=1)
-
-        // ── PANEL C: Intelligence Engine (top_left) ───────────────────────────────
-        var table dashC = table.new(position.middle_left, 2, 80,
              bgcolor=color.new(#0a0a12, 5),
              border_color=color.new(color.white, 30), border_width=1,
              frame_color=color.new(color.white, 20), frame_width=1)
@@ -3576,6 +3565,16 @@ f_renderDashABC() =>
                  text_color=f_sc(velocityScore), text_size=_szA)
             _ra := _ra + 1
 
+    0
+
+f_renderDashB() =>
+    if showTable
+        // ── PANEL B: Belief Distributions (bottom_right) ─────────────────────────
+        var table dashB = table.new(position.bottom_right, 2, 30,
+             bgcolor=color.new(#0a0a12, 5),
+             border_color=color.new(color.white, 30), border_width=1,
+             frame_color=color.new(color.white, 20), frame_width=1)
+
         // ════ PANEL B ═════════════════════════════════════════════════════════════
         int _rb = 0
 
@@ -3744,6 +3743,16 @@ f_renderDashABC() =>
                  text_color=geoFullConvexityPossible ? color.lime : geoPartialConvexityPossible ? color.yellow : color.orange,
                  text_size=_szA)
             _rb := _rb + 1
+
+    0
+
+f_renderDashC() =>
+    if showTable
+        // ── PANEL C: Intelligence Engine (top_left) ───────────────────────────────
+        var table dashC = table.new(position.middle_left, 2, 80,
+             bgcolor=color.new(#0a0a12, 5),
+             border_color=color.new(color.white, 30), border_width=1,
+             frame_color=color.new(color.white, 20), frame_width=1)
 
         // ════ PANEL C ═════════════════════════════════════════════════════════════
         int _rc = 0
@@ -4110,6 +4119,10 @@ f_renderDashABC() =>
                  text_color=f_sc(erf_dissipationConfidence), text_size=_szA)
             _rc := _rc + 1
 
+    0
+
+f_renderDashFU() =>
+    if showTable
         // ── FU Order Blocks Dashboard Panel ───────────────────────────────────
         if showDFU_Panel
             var table dashFU = table.new(position.middle_right, 2, 12,
@@ -4190,6 +4203,8 @@ f_renderDashABC() =>
                     table.cell(dashFU, 1, _rf, "–",
                          text_color=color.gray, text_size=_szA)
                     _rf := _rf + 0
+    0
+
 
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -4961,7 +4976,10 @@ f_renderDashP3() =>
 // ═══════════════════════════════════════════════════════════════════════════════
 // ── Phase 3 high-conviction alert ─────────────────────────────────────────────
 // ── Dashboard & P3 render calls ─────────────────────────────────────────────
-f_renderDashABC()
+f_renderDashA()
+f_renderDashB()
+f_renderDashC()
+f_renderDashFU()
 f_renderDashP3()
 
 bool p3_highConvictionSetup =
