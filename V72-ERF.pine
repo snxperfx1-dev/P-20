@@ -227,8 +227,6 @@ dashAdvancedMode   = input.bool  (false, "Advanced Mode (Diagnostic Depth)",   g
 showV72_Command    = input.bool  (true,  "Show V72 COMMAND Panel",             group=GRP_V72_DASH)
 rrMinimum          = input.float (1.5,   "Minimum R:R to TP1 (gate)",          group=GRP_V72_TE, minval=0.5, step=0.1)
 erfEntryThreshold  = input.float (45.0,  "ERF Trade Readiness Entry Gate",     group=GRP_V72_ERF, minval=0.0, maxval=100.0, step=5.0)
-tf3                = input.timeframe("240", "MCE Timeframe 3 (H4)",            group=GRP_V72_MCE)
-tf4                = input.timeframe("D",    "MCE Timeframe 4 (Daily)",        group=GRP_V72_MCE)
 mceWeightMode      = input.string("Equal Weight", "MCE Weighting Mode",        group=GRP_V72_MCE, options=["Equal Weight", "HTF-Biased"])
 
 // ── Engine constants (recalibrate here; not inputs to respect CE10116) ──
@@ -5903,13 +5901,9 @@ f_v72_gradeColor(string _g) =>
 f_v72_riskColor(string _r) =>
      _r == "LOW" ? color.lime : _r == "MEDIUM" ? color.yellow : color.orange
 
-// ── MCE HTF sensors (global request.security) ──
-[raw_dir_tf3, raw_structB_tf3, raw_disp_tf3, raw_expScr_tf3, raw_decScr_tf3, raw_curvScr_tf3, raw_abScr_tf3, raw_liqScr_tf3] = request.security(syminfo.tickerid, tf3,
-     f_htfBeliefs(open, high, low, close, effThresh, dispThresh, acceptBars, convMult, obLookback),
-     lookahead=barmerge.lookahead_off)
-[raw_dir_tf4, raw_structB_tf4, raw_disp_tf4, raw_expScr_tf4, raw_decScr_tf4, raw_curvScr_tf4, raw_abScr_tf4, raw_liqScr_tf4] = request.security(syminfo.tickerid, tf4,
-     f_htfBeliefs(open, high, low, close, effThresh, dispThresh, acceptBars, convMult, obLookback),
-     lookahead=barmerge.lookahead_off)
+// ── MCE: uses the already-fetched tf1/tf2 HTF beliefs only (CE10116: no extra
+//    request.*() calls — additional request.security calls add external elements
+//    to EVERY function's budget and overflowed the 254-element limit).
 
 // ── V72 engine + dashboard (wrapped to keep main body under the limit) ──
 f_v72_run() =>
@@ -5990,37 +5984,25 @@ f_v72_run() =>
          rot_transferProbability >= rieContestedTh ? "CONTESTED" :
          rot_transferProbability >= 25 ? "SOFTENING" : "STABLE"
 
-    // 21.5 - MULTI-TIMEFRAME CONSENSUS ENGINE (MCE, 4-level) (C15)
+    // 21.5 - MULTI-TIMEFRAME CONSENSUS ENGINE (MCE) - chart + tf1 + tf2
+    // Uses only the already-fetched tf1/tf2 HTF beliefs (no extra request.* calls).
     int mce_dir1 = dir_tf1
     int mce_dir2 = dir_tf2
-    int mce_dir3 = nz(raw_dir_tf3)
-    int mce_dir4 = nz(raw_dir_tf4)
 
     float mce_tf1_integrity = math.min(expScr_tf1 * 0.50 + (100.0 - decScr_tf1) * 0.30 + curvScr_tf1 * 0.20, 100.0)
     float mce_tf2_integrity = math.min(expScr_tf2 * 0.50 + (100.0 - decScr_tf2) * 0.30 + curvScr_tf2 * 0.20, 100.0)
-    float mce_tf3_integrity = math.min(nz(raw_expScr_tf3) * 0.50 + (100.0 - nz(raw_decScr_tf3)) * 0.30 + nz(raw_curvScr_tf3) * 0.20, 100.0)
-    float mce_tf4_integrity = math.min(nz(raw_expScr_tf4) * 0.50 + (100.0 - nz(raw_decScr_tf4)) * 0.30 + nz(raw_curvScr_tf4) * 0.20, 100.0)
-    float mce_tf3_pressure  = math.min(nz(raw_abScr_tf3) * 0.50 + nz(raw_liqScr_tf3) * 0.30 + nz(raw_disp_tf3) * 5.0, 100.0)
-    float mce_tf4_pressure  = math.min(nz(raw_abScr_tf4) * 0.50 + nz(raw_liqScr_tf4) * 0.30 + nz(raw_disp_tf4) * 5.0, 100.0)
-    int   mce_tf3_structDir = nz(raw_structB_tf3)
-    int   mce_tf4_structDir = nz(raw_structB_tf4)
 
     int _mceAgree =
+         (direction != 0 ? 1 : 0) +
          (direction != 0 and mce_dir1 == direction ? 1 : 0) +
-         (direction != 0 and mce_dir2 == direction ? 1 : 0) +
-         (direction != 0 and mce_dir3 == direction ? 1 : 0) +
-         (direction != 0 and mce_dir4 == direction ? 1 : 0)
-    float mce_alignmentScore = direction != 0 ? float(_mceAgree) / 4.0 * 100.0 : 0.0
+         (direction != 0 and mce_dir2 == direction ? 1 : 0)
+    float mce_alignmentScore = direction != 0 ? float(_mceAgree) / 3.0 * 100.0 : 0.0
 
-    float _mw1 = mceWeightMode == "HTF-Biased" ? 0.10 : 0.25
-    float _mw2 = mceWeightMode == "HTF-Biased" ? 0.20 : 0.25
-    float _mw3 = mceWeightMode == "HTF-Biased" ? 0.30 : 0.25
-    float _mw4 = mceWeightMode == "HTF-Biased" ? 0.40 : 0.25
+    float _mw1 = mceWeightMode == "HTF-Biased" ? 0.35 : 0.50
+    float _mw2 = mceWeightMode == "HTF-Biased" ? 0.65 : 0.50
     float mce_htfAlignmentScore = direction != 0 ? (
          (mce_dir1 == direction ? _mw1 : 0.0) +
-         (mce_dir2 == direction ? _mw2 : 0.0) +
-         (mce_dir3 == direction ? _mw3 : 0.0) +
-         (mce_dir4 == direction ? _mw4 : 0.0)) * 100.0 : 0.0
+         (mce_dir2 == direction ? _mw2 : 0.0)) * 100.0 : 0.0
 
     float mce_execAlignmentScore = direction != 0 ? (
          0.20 +
@@ -6393,15 +6375,11 @@ f_v72_run() =>
             _r := _r + 1
 
             table.cell(cmd, 0, _r, "MCE Integrity", text_color=#ffb86c, text_size=size.tiny)
-            table.cell(cmd, 1, _r, "T1 " + f_v72_num(mce_tf1_integrity) + " / T2 " + f_v72_num(mce_tf2_integrity) + " / T3 " + f_v72_num(mce_tf3_integrity) + " / T4 " + f_v72_num(mce_tf4_integrity), text_color=color.silver, text_size=size.tiny)
+            table.cell(cmd, 1, _r, "T1 " + f_v72_num(mce_tf1_integrity) + " / T2 " + f_v72_num(mce_tf2_integrity), text_color=color.silver, text_size=size.tiny)
             _r := _r + 1
 
             table.cell(cmd, 0, _r, "MCE TF Dir", text_color=#ffb86c, text_size=size.tiny)
-            table.cell(cmd, 1, _r, str.tostring(mce_dir1) + "/" + str.tostring(mce_dir2) + "/" + str.tostring(mce_dir3) + "/" + str.tostring(mce_dir4) + "  (struct " + str.tostring(mce_tf3_structDir) + "," + str.tostring(mce_tf4_structDir) + ")", text_color=color.silver, text_size=size.tiny)
-            _r := _r + 1
-
-            table.cell(cmd, 0, _r, "MCE HTF Pressure", text_color=#ffb86c, text_size=size.tiny)
-            table.cell(cmd, 1, _r, "T3 " + f_v72_num(mce_tf3_pressure) + " / T4 " + f_v72_num(mce_tf4_pressure), text_color=color.silver, text_size=size.tiny)
+            table.cell(cmd, 1, _r, "chart " + str.tostring(direction) + " / T1 " + str.tostring(mce_dir1) + " / T2 " + str.tostring(mce_dir2), text_color=color.silver, text_size=size.tiny)
             _r := _r + 1
 
     0
